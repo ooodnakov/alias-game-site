@@ -33,7 +33,7 @@ services:
     volumes:
       - .:/app
       - nextjs_cache:/app/.next
-    command: ["sh", "-c", "echo 'Building from mounted local files' && echo 'DB_HOST='$DB_HOST && ls -la /app && echo 'Waiting for DB' && while ! nc -z db 3306; do sleep 1; done && echo 'DB ready' && rm -rf .next || true && chown -R nextjs:nodejs .next && su nextjs -c 'pnpm run build && echo Build complete && pnpm run dev'"]
+    command: ["sh", "-c", "echo 'Building from mounted local files' && echo 'DB_HOST='$DB_HOST && ls -la /app && echo 'Waiting for DB' && while ! nc -z db 3306; do sleep 1; done && echo 'DB ready' && chown -R nextjs:nodejs .next && pnpm run build && echo Build complete && pnpm run dev"]
     restart: unless-stopped
     networks:
       - proxy
