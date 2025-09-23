@@ -19,10 +19,5 @@ export default defineConfig({
     },
     exclude: ["**/tests/e2e/**"],
     include: ["tests/**/*.test.ts"],
-    css: {
-      postcss: {
-        plugins: [],
-      },
-    },
   },
 });

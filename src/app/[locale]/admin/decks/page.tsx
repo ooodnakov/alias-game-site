@@ -2,19 +2,19 @@ import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 
 import { AdminDeckModeration } from "@/components/admin-deck-moderation";
-import type { AppLocale } from "@/i18n/config";
 
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,
 }: {
-  params: { locale: AppLocale };
+  params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
-  const t = await getTranslations({ locale: params.locale, namespace: "meta" });
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "meta" });
   const title = t("admin.title");
   const description = t("admin.description");
-  const path = `/${params.locale}/admin/decks`;
+  const path = `/${locale}/admin/decks`;
 
   return {
     title,
@@ -23,13 +23,13 @@ export async function generateMetadata({
       title,
       description,
       url: path,
-      images: [`/${params.locale}/opengraph-image`],
+      images: [`/${locale}/opengraph-image`],
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
-      images: [`/${params.locale}/twitter-image`],
+      images: [`/${locale}/twitter-image`],
     },
     alternates: {
       canonical: path,

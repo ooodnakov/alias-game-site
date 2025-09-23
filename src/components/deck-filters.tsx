@@ -4,7 +4,8 @@ import * as Checkbox from "@radix-ui/react-checkbox";
 import * as Switch from "@radix-ui/react-switch";
 import { Check } from "lucide-react";
 import { useState, useTransition } from "react";
-import { usePathname, useRouter, useSearchParams } from "next-intl/client";
+import { usePathname, useRouter } from "@/i18n/navigation";
+import { useSearchParams } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 

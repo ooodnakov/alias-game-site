@@ -2,12 +2,15 @@ import { NextResponse } from "next/server";
 
 import { getDeckBySlug } from "@/lib/deck-store";
 
-interface Params {
-  params: { slug: string };
-}
-
-export async function GET(_request: Request, { params }: Params) {
-  const record = await getDeckBySlug(params.slug);
+export async function GET(
+  _request: Request,
+  context: { params: Promise<Record<string, string>> },
+) {
+  const { slug } = await context.params;
+  if (!slug) {
+    return NextResponse.json({ message: "Deck not found" }, { status: 404 });
+  }
+  const record = await getDeckBySlug(slug);
 
   if (!record) {
     return NextResponse.json({ message: "Deck not found" }, { status: 404 });

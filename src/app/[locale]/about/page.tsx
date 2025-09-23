@@ -1,18 +1,17 @@
 import type { Metadata } from "next";
-import Link from "next-intl/link";
+import { Link } from "@/i18n/navigation";
 import { getTranslations } from "next-intl/server";
-
-import type { AppLocale } from "@/i18n/config";
 
 export async function generateMetadata({
   params,
 }: {
-  params: { locale: AppLocale };
+  params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
-  const t = await getTranslations({ locale: params.locale, namespace: "meta" });
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "meta" });
   const title = t("about.title");
   const description = t("about.description");
-  const path = `/${params.locale}/about`;
+  const path = `/${locale}/about`;
 
   return {
     title,
@@ -21,13 +20,13 @@ export async function generateMetadata({
       title,
       description,
       url: path,
-      images: [`/${params.locale}/opengraph-image`],
+      images: [`/${locale}/opengraph-image`],
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
-      images: [`/${params.locale}/twitter-image`],
+      images: [`/${locale}/twitter-image`],
     },
     alternates: {
       canonical: path,
