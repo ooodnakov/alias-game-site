@@ -631,7 +631,10 @@ export async function createDeck(
       ? options.coverUrl
       : normalized.metadata.coverImage;
   const tags = normalized.metadata.categories ?? [];
-  const hasModeration = Boolean(process.env.DECK_ADMIN_TOKEN?.length);
+  const adminLoginsEnv = process.env.DECK_ADMIN_GITHUB_LOGINS ?? "";
+  const hasModeration = adminLoginsEnv
+    .split(",")
+    .some((value) => value.trim().length > 0);
   const status = options.status ?? (hasModeration ? "pending" : "published");
   const rejectionReason =
     status === "rejected"

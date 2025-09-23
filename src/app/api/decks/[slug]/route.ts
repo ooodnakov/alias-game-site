@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 
+import { auth } from "@/auth";
 import { defaultLocale } from "@/i18n/config";
-import { requestHasAdminToken } from "@/lib/admin-auth";
 import { getDeckBySlug } from "@/lib/deck-store";
 import { buildDeckImportUrl, buildDeckJsonUrl } from "@/lib/url";
 
@@ -10,7 +10,8 @@ interface Params {
 }
 
 export async function GET(request: NextRequest, { params }: Params) {
-  const includeUnpublished = requestHasAdminToken(request.headers);
+  const session = await auth();
+  const includeUnpublished = Boolean(session?.user?.isAdmin);
   const record = await getDeckBySlug(params.slug, {
     includeUnpublished,
   });
