@@ -1,23 +1,23 @@
 import type { Metadata } from "next";
-import Link from "next-intl/link";
+import { Link } from "@/i18n/navigation";
 import { getTranslations } from "next-intl/server";
 
 import { DeckCard } from "@/components/deck-card";
 import { Button } from "@/components/ui/button";
 import { listRecentDecks } from "@/lib/deck-store";
-import type { AppLocale } from "@/i18n/config";
 
 export const revalidate = 300;
 
 export async function generateMetadata({
   params,
 }: {
-  params: { locale: AppLocale };
+  params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
-  const t = await getTranslations({ locale: params.locale, namespace: "meta" });
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "meta" });
   const title = t("landing.title");
   const description = t("landing.description");
-  const path = `/${params.locale}`;
+  const path = `/${locale}`;
 
   return {
     title,

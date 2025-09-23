@@ -13,6 +13,8 @@
   --muted-foreground: #475569;
   --border: rgba(15, 23, 41, 0.08);
   --radius: 16px;
+  --font-geist-sans: "Inter", "Helvetica Neue", Arial, sans-serif;
+  --font-geist-mono: "SFMono-Regular", "Menlo", "Monaco", "Consolas", "Liberation Mono", monospace;
 }
 
 @media (prefers-color-scheme: dark) {

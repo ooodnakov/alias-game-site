@@ -1,7 +1,7 @@
 import Image from "next/image";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import Link from "next-intl/link";
+import { Link } from "@/i18n/navigation";
 import { getTranslations } from "next-intl/server";
 
 import { CopyJsonButton } from "@/components/copy-json-button";
@@ -11,8 +11,9 @@ import { getDeckBySlug, listDeckSlugs } from "@/lib/deck-store";
 import { buildDeckImportUrl, buildDeckJsonUrl, getBaseUrl } from "@/lib/url";
 import { locales } from "@/i18n/config";
 
-interface DeckDetailPageProps {
-  params: { locale: string; slug: string };
+interface DeckDetailPageParams {
+  locale: string;
+  slug: string;
 }
 
 export async function generateStaticParams() {
@@ -20,15 +21,20 @@ export async function generateStaticParams() {
   return locales.flatMap((locale) => slugs.map((slug) => ({ locale, slug })));
 }
 
-export async function generateMetadata({ params }: DeckDetailPageProps): Promise<Metadata> {
-  const deck = await getDeckBySlug(params.slug);
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<DeckDetailPageParams>;
+}): Promise<Metadata> {
+  const { locale, slug } = await params;
+  const deck = await getDeckBySlug(slug);
 
   if (!deck) {
     return {};
   }
 
   const jsonUrl = buildDeckJsonUrl(deck.metadata.slug);
-  const detailPath = `/${params.locale}/decks/${deck.metadata.slug}`;
+  const detailPath = `/${locale}/decks/${deck.metadata.slug}`;
   const ogImagePath = `${detailPath}/opengraph-image`;
   const twitterImagePath = `${detailPath}/twitter-image`;
   const importUrl = buildDeckImportUrl(deck.metadata.slug);
@@ -55,7 +61,7 @@ export async function generateMetadata({ params }: DeckDetailPageProps): Promise
     alternates: {
       canonical: detailPath,
       languages: Object.fromEntries(
-        locales.map((locale) => [locale, `/${locale}/decks/${deck.metadata.slug}`]),
+        locales.map((candidate) => [candidate, `/${candidate}/decks/${deck.metadata.slug}`]),
       ),
     },
     other: {
@@ -65,8 +71,13 @@ export async function generateMetadata({ params }: DeckDetailPageProps): Promise
   };
 }
 
-export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
-  const record = await getDeckBySlug(params.slug);
+export default async function DeckDetailPage({
+  params,
+}: {
+  params: Promise<DeckDetailPageParams>;
+}) {
+  const { locale, slug } = await params;
+  const record = await getDeckBySlug(slug);
   const t = await getTranslations("decks");
 
   if (!record) {
@@ -75,7 +86,7 @@ export default async function DeckDetailPage({ params }: DeckDetailPageProps) {
 
   const jsonUrl = buildDeckJsonUrl(record.metadata.slug);
   const importUrl = buildDeckImportUrl(record.metadata.slug);
-  const detailUrl = `${getBaseUrl()}/${params.locale}/decks/${record.metadata.slug}`;
+  const detailUrl = `${getBaseUrl()}/${locale}/decks/${record.metadata.slug}`;
   const additionalProperties: Array<Record<string, unknown>> = [
     {
       "@type": "PropertyValue",

@@ -3,9 +3,9 @@
 import { cva } from "class-variance-authority";
 import type { ReactNode } from "react";
 
-import Link from "next-intl/link";
 import { useLocale } from "next-intl";
-import { usePathname } from "next-intl/client";
+
+import { Link, usePathname } from "@/i18n/navigation";
 
 import { locales } from "@/i18n/config";
 import { cn } from "@/lib/cn";

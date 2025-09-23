@@ -1,12 +1,10 @@
 "use client";
 
-import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { DeckMetadata, DeckStatus } from "@/lib/deck-store";
-
-const STORAGE_KEY = "alias-admin-token";
 
 type ModerationDeck = DeckMetadata & {
   deckUrl: string;
@@ -15,10 +13,6 @@ type ModerationDeck = DeckMetadata & {
 };
 
 interface AdminDeckModerationLabels {
-  tokenLabel: string;
-  tokenPlaceholder: string;
-  saveToken: string;
-  clearToken: string;
   refresh: string;
   loading: string;
   loadError: string;
@@ -47,10 +41,8 @@ interface DeckResponse {
 }
 
 export function AdminDeckModeration({ labels }: AdminDeckModerationProps) {
-  const [tokenInput, setTokenInput] = useState("");
-  const [token, setToken] = useState<string | null>(null);
   const [decks, setDecks] = useState<ModerationDeck[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [processingSlug, setProcessingSlug] = useState<string | null>(null);
@@ -63,79 +55,35 @@ export function AdminDeckModeration({ labels }: AdminDeckModerationProps) {
     } as const;
   }, []);
 
-  const fetchDecks = useCallback(
-    async (activeToken: string) => {
-      setLoading(true);
-      setError(null);
-      setActionError(null);
-      try {
-        const response = await fetch(
-          "/api/decks?status=pending&nsfw=true&pageSize=50",
-          {
-            headers: {
-              "X-Admin-Token": activeToken,
-            },
-          },
-        );
+  const fetchDecks = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    setActionError(null);
+    try {
+      const response = await fetch("/api/decks?status=pending&nsfw=true&pageSize=50", {
+        cache: "no-store",
+      });
 
-        if (!response.ok) {
-          throw new Error("Failed to load decks");
-        }
-
-        const payload = (await response.json()) as DeckResponse;
-        setDecks(Array.isArray(payload.items) ? payload.items : []);
-      } catch {
-        setDecks([]);
-        setError(labels.loadError);
-      } finally {
-        setLoading(false);
+      if (!response.ok) {
+        throw new Error("Failed to load decks");
       }
-    },
-    [labels.loadError],
-  );
+
+      const payload = (await response.json()) as DeckResponse;
+      setDecks(Array.isArray(payload.items) ? payload.items : []);
+    } catch {
+      setDecks([]);
+      setError(labels.loadError);
+    } finally {
+      setLoading(false);
+    }
+  }, [labels.loadError]);
 
   useEffect(() => {
-    if (typeof window === "undefined") {
-      return;
-    }
-    const stored = window.localStorage.getItem(STORAGE_KEY);
-    if (stored) {
-      setToken(stored);
-      setTokenInput(stored);
-      void fetchDecks(stored);
-    }
+    void fetchDecks();
   }, [fetchDecks]);
-
-  const handleSaveToken = useCallback(
-    async (event: FormEvent<HTMLFormElement>) => {
-      event.preventDefault();
-      const trimmed = tokenInput.trim();
-      if (!trimmed) {
-        window.localStorage.removeItem(STORAGE_KEY);
-        setToken(null);
-        setDecks([]);
-        return;
-      }
-      window.localStorage.setItem(STORAGE_KEY, trimmed);
-      setToken(trimmed);
-      await fetchDecks(trimmed);
-    },
-    [fetchDecks, tokenInput],
-  );
-
-  const handleClearToken = useCallback(() => {
-    window.localStorage.removeItem(STORAGE_KEY);
-    setToken(null);
-    setTokenInput("");
-    setDecks([]);
-  }, []);
 
   const moderateDeck = useCallback(
     async (slug: string, status: DeckStatus, rejectionReason?: string) => {
-      if (!token) {
-        return;
-      }
-
       setProcessingSlug(slug);
       setActionError(null);
       try {
@@ -143,7 +91,6 @@ export function AdminDeckModeration({ labels }: AdminDeckModerationProps) {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "X-Admin-Token": token,
           },
           body: JSON.stringify({ slug, status, rejectionReason }),
         });
@@ -152,14 +99,14 @@ export function AdminDeckModeration({ labels }: AdminDeckModerationProps) {
           throw new Error("Moderation failed");
         }
 
-        await fetchDecks(token);
+        await fetchDecks();
       } catch {
         setActionError(labels.actionError);
       } finally {
         setProcessingSlug(null);
       }
     },
-    [fetchDecks, labels.actionError, token],
+    [fetchDecks, labels.actionError],
   );
 
   const handleApprove = useCallback(
@@ -187,30 +134,11 @@ export function AdminDeckModeration({ labels }: AdminDeckModerationProps) {
 
   return (
     <div className="space-y-8">
-      <form className="flex flex-col gap-4 rounded-3xl border border-border/60 bg-surface p-6 shadow-sm" onSubmit={handleSaveToken}>
-        <label className="flex flex-col gap-2 text-sm text-foreground/80">
-          <span className="font-medium">{labels.tokenLabel}</span>
-          <input
-            value={tokenInput}
-            onChange={(event) => setTokenInput(event.target.value)}
-            placeholder={labels.tokenPlaceholder}
-            className="rounded-3xl border border-border/60 bg-surface px-4 py-3 text-sm text-foreground shadow-inner"
-            type="password"
-            autoComplete="off"
-          />
-        </label>
-        <div className="flex flex-wrap gap-3">
-          <Button type="submit">{labels.saveToken}</Button>
-          <Button type="button" variant="ghost" onClick={handleClearToken}>
-            {labels.clearToken}
-          </Button>
-          {token ? (
-            <Button type="button" variant="secondary" onClick={() => fetchDecks(token)} disabled={loading}>
-              {labels.refresh}
-            </Button>
-          ) : null}
-        </div>
-      </form>
+      <div className="flex flex-wrap gap-3 rounded-3xl border border-border/60 bg-surface p-6 shadow-sm">
+        <Button type="button" onClick={() => void fetchDecks()} disabled={loading}>
+          {labels.refresh}
+        </Button>
+      </div>
 
       {loading ? (
         <p className="rounded-3xl border border-dashed border-border/60 bg-surface p-10 text-center text-sm text-foreground/60">
@@ -226,7 +154,7 @@ export function AdminDeckModeration({ labels }: AdminDeckModerationProps) {
         <p className="rounded-3xl bg-amber-100 px-4 py-3 text-sm text-amber-800">{actionError}</p>
       ) : null}
 
-      {token && !loading && !error ? (
+      {!loading && !error ? (
         decks.length ? (
           <div className="space-y-6">
             {decks.map((deck) => (
@@ -239,9 +167,7 @@ export function AdminDeckModeration({ labels }: AdminDeckModerationProps) {
                     <h3 className="text-lg font-semibold text-foreground">{deck.title}</h3>
                     <p className="text-sm text-foreground/70">{deck.author}</p>
                   </div>
-                  <Badge
-                    className={`uppercase ${statusBadgeClass[deck.status] ?? "bg-muted text-foreground"}`}
-                  >
+                  <Badge className={`uppercase ${statusBadgeClass[deck.status] ?? "bg-muted text-foreground"}`}>
                     {labels.status[deck.status] ?? deck.status}
                   </Badge>
                 </header>
@@ -285,11 +211,7 @@ export function AdminDeckModeration({ labels }: AdminDeckModerationProps) {
                   </div>
                 ) : null}
                 <div className="flex flex-wrap gap-3">
-                  <Button
-                    type="button"
-                    onClick={() => handleApprove(deck.slug)}
-                    disabled={processingSlug === deck.slug}
-                  >
+                  <Button type="button" onClick={() => handleApprove(deck.slug)} disabled={processingSlug === deck.slug}>
                     {labels.approve}
                   </Button>
                   <Button

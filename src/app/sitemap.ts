@@ -1,3 +1,5 @@
+export const runtime = "nodejs";
+
 import type { MetadataRoute } from "next";
 
 import { locales } from "@/i18n/config";

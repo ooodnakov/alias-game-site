@@ -1,17 +1,20 @@
 import { NextResponse, type NextRequest } from "next/server";
 
+import { auth } from "@/auth";
 import { defaultLocale } from "@/i18n/config";
-import { requestHasAdminToken } from "@/lib/admin-auth";
 import { getDeckBySlug } from "@/lib/deck-store";
 import { buildDeckImportUrl, buildDeckJsonUrl } from "@/lib/url";
 
-interface Params {
-  params: { slug: string };
-}
-
-export async function GET(request: NextRequest, { params }: Params) {
+export async function GET(
+  request: NextRequest,
+  context: { params: Promise<Record<string, string>> },
+) {
+  const { slug } = await context.params;
+  if (!slug) {
+    return NextResponse.json({ message: "Deck not found" }, { status: 404 });
+  }
   const includeUnpublished = requestHasAdminToken(request.headers);
-  const record = await getDeckBySlug(params.slug, {
+  const record = await getDeckBySlug(slug, {
     includeUnpublished,
   });
 
@@ -21,9 +24,9 @@ export async function GET(request: NextRequest, { params }: Params) {
 
   const payload = {
     ...record.metadata,
-    deckUrl: `/${defaultLocale}/decks/${record.metadata.slug}`,
-    jsonUrl: buildDeckJsonUrl(record.metadata.slug),
-    importUrl: buildDeckImportUrl(record.metadata.slug),
+    deckUrl: `/${defaultLocale}/decks/${slug}`,
+    jsonUrl: buildDeckJsonUrl(slug),
+    importUrl: buildDeckImportUrl(slug),
     deck: record.deck,
   };
 

@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 
-import { requestHasAdminToken } from "@/lib/admin-auth";
+import { auth } from "@/auth";
 import { defaultLocale } from "@/i18n/config";
 import { getDeckBySlug, updateDeckStatus, type DeckStatus } from "@/lib/deck-store";
 import { buildDeckImportUrl, buildDeckJsonUrl } from "@/lib/url";
@@ -8,7 +8,8 @@ import { buildDeckImportUrl, buildDeckJsonUrl } from "@/lib/url";
 const allowedStatuses: DeckStatus[] = ["published", "pending", "rejected"];
 
 export async function POST(request: NextRequest) {
-  if (!requestHasAdminToken(request.headers)) {
+  const session = await auth();
+  if (!session?.user?.isAdmin) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
 

@@ -1,0 +1,33 @@
+{
+  "title": "Playwright Upload Deck",
+  "author": "E2E Tester",
+  "language": "en",
+  "allowNSFW": false,
+  "metadata": {
+    "categories": ["Automation"],
+    "wordClasses": ["noun"],
+    "version": "1.0.0"
+  },
+  "words": [
+    { "text": "Script" },
+    { "text": "Browser" },
+    { "text": "Locator" },
+    { "text": "Assertion" },
+    { "text": "Fixture" },
+    { "text": "Snapshot" },
+    { "text": "Test" },
+    { "text": "Runner" },
+    { "text": "Mock" },
+    { "text": "Stub" },
+    { "text": "Automation" },
+    { "text": "CLI" },
+    { "text": "Report" },
+    { "text": "Coverage" },
+    { "text": "Console" },
+    { "text": "Network" },
+    { "text": "Trace" },
+    { "text": "Scenario" },
+    { "text": "Gallery" },
+    { "text": "Upload" }
+  ]
+}

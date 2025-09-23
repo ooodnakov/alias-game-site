@@ -3,7 +3,7 @@
 import * as Select from "@radix-ui/react-select";
 import { Check, ChevronDown } from "lucide-react";
 import { useLocale } from "next-intl";
-import { usePathname, useRouter } from "next-intl/client";
+import { usePathname, useRouter } from "@/i18n/navigation";
 
 import { buttonVariants } from "@/components/ui/button";
 import { LOCALE_LABELS, locales, type AppLocale } from "@/i18n/config";

@@ -10,10 +10,12 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 
 const uploadSchema = z.object({
-  file: z
-    .instanceof(FileList)
-    .refine((files) => files?.length, "required")
-    .transform((files) => files?.item(0) ?? null),
+  file: z.custom<FileList>((value) => {
+    if (typeof FileList === "undefined") {
+      return true;
+    }
+    return value instanceof FileList && value.length > 0;
+  }, "required"),
   coverUrl: z
     .string()
     .trim()
@@ -24,6 +26,7 @@ const uploadSchema = z.object({
 });
 
 type UploadSchema = z.infer<typeof uploadSchema>;
+type UploadSchemaInput = z.input<typeof uploadSchema>;
 
 type HCaptchaInstance = InstanceType<typeof HCaptchaComponent>;
 
@@ -63,7 +66,7 @@ export function DeckUploadForm({ labels }: DeckUploadFormProps) {
     handleSubmit,
     formState: { isSubmitting, errors },
     reset,
-  } = useForm<UploadSchema>({
+  } = useForm<UploadSchemaInput>({
     resolver: zodResolver(uploadSchema),
   });
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
@@ -79,8 +82,9 @@ export function DeckUploadForm({ labels }: DeckUploadFormProps) {
     setCaptchaToken(null);
   };
 
-  const onSubmit = async (data: UploadSchema) => {
-    const file = data.file;
+  const onSubmit = async (data: UploadSchemaInput) => {
+    const parsed: UploadSchema = uploadSchema.parse(data);
+    const file = parsed.file.item(0);
     if (!file) {
       setErrorMessage(labels.validation.required);
       setStatus("error");
@@ -99,8 +103,8 @@ export function DeckUploadForm({ labels }: DeckUploadFormProps) {
 
     const formData = new FormData();
     formData.append("file", file);
-    if (data.coverUrl) {
-      formData.append("coverUrl", data.coverUrl);
+    if (parsed.coverUrl) {
+      formData.append("coverUrl", parsed.coverUrl);
     }
     if (captchaToken) {
       formData.append("captchaToken", captchaToken);
