@@ -40,13 +40,23 @@ function createDisabledLimiter(config: RateLimiterConfig): RateLimiter {
 
 function createMemoryLimiter(config: RateLimiterConfig): RateLimiter {
   const buckets = new Map<string, { count: number; reset: number }>();
+  const windowMs = Math.max(1, config.window * 1000);
+  const cleanupIntervalMs = Math.max(1000, Math.min(windowMs, 60_000));
+
+  setInterval(() => {
+    const now = Date.now();
+    for (const [key, bucket] of buckets) {
+      if (bucket.reset <= now) {
+        buckets.delete(key);
+      }
+    }
+  }, cleanupIntervalMs);
 
   return {
     enabled: true,
     async check(identifier: string) {
       const key = config.prefix ? `${config.prefix}:${identifier}` : identifier;
       const now = Date.now();
-      const windowMs = config.window * 1000;
       const bucket = buckets.get(key);
 
       if (!bucket || bucket.reset <= now) {

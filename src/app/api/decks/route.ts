@@ -27,18 +27,20 @@ function getClientIp(request: NextRequest) {
   const forwardedFor = request.headers.get("x-forwarded-for");
   if (forwardedFor) {
     const [first] = forwardedFor.split(",");
-    if (first) {
-      return first.trim();
+    const ip = first?.trim();
+    if (ip) {
+      return ip;
     }
   }
 
-  const realIp = request.headers.get("x-real-ip");
+  const realIp = request.headers.get("x-real-ip")?.trim();
   if (realIp) {
     return realIp;
   }
 
-  if (request.ip) {
-    return request.ip;
+  const directIp = request.ip?.trim();
+  if (directIp) {
+    return directIp;
   }
 
   return "unknown";
@@ -180,7 +182,13 @@ async function parseDeckPayload(request: NextRequest) {
     throw new Error("Invalid JSON");
   }
 
-  const parsedDeck = DeckSchema.safeParse(json);
+  const { captchaToken: captchaTokenRaw, ...rest } = json;
+  const hCaptchaResponse = json["h-captcha-response"];
+  if (Object.prototype.hasOwnProperty.call(rest, "h-captcha-response")) {
+    delete rest["h-captcha-response"];
+  }
+
+  const parsedDeck = DeckSchema.safeParse(rest);
   if (!parsedDeck.success) {
     throw new Error("Deck JSON failed validation");
   }
@@ -188,7 +196,12 @@ async function parseDeckPayload(request: NextRequest) {
   return {
     data: parsedDeck.data,
     coverUrl: undefined,
-    captchaToken: typeof json.captchaToken === "string" ? json.captchaToken : undefined,
+    captchaToken:
+      typeof captchaTokenRaw === "string"
+        ? captchaTokenRaw
+        : typeof hCaptchaResponse === "string"
+          ? hCaptchaResponse
+          : undefined,
   };
 }
 

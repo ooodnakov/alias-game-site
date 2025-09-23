@@ -1,7 +1,7 @@
 "use client";
 
 import HCaptcha from "@hcaptcha/react-hcaptcha";
-import type { default as HCaptchaComponent } from "@hcaptcha/react-hcaptcha";
+import type { HCaptchaRef } from "@hcaptcha/react-hcaptcha";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -24,10 +24,6 @@ const uploadSchema = z.object({
 });
 
 type UploadSchema = z.infer<typeof uploadSchema>;
-
-type HCaptchaInstance = HCaptchaComponent extends { new (...args: unknown[]): infer R }
-  ? R
-  : never;
 
 interface DeckUploadFormProps {
   labels: {
@@ -59,7 +55,7 @@ interface DeckUploadFormProps {
 export function DeckUploadForm({ labels }: DeckUploadFormProps) {
   const captchaSiteKey = process.env.NEXT_PUBLIC_HCAPTCHA_SITE_KEY;
   const isCaptchaEnabled = Boolean(captchaSiteKey);
-  const captchaRef = useRef<HCaptchaInstance | null>(null);
+  const captchaRef = useRef<HCaptchaRef | null>(null);
   const {
     register,
     handleSubmit,
@@ -119,25 +115,21 @@ export function DeckUploadForm({ labels }: DeckUploadFormProps) {
       if (!response.ok) {
         const payload = await response.json().catch(() => null);
         const message = payload?.message;
-        let translated = labels.error;
-        if (message === "Invalid JSON") {
-          translated = labels.validation.invalidJson;
-        } else if (message === "Deck JSON failed validation") {
-          translated = labels.validation.schema;
-        } else if (message === "File missing") {
-          translated = labels.validation.required;
-        } else if (message === "File too large" || message === "Deck too large") {
-          translated = labels.error;
-        } else if (message === "Captcha required") {
-          translated = labels.serverErrors.captchaRequired;
+        const errorMap: Record<string, string> = {
+          "Invalid JSON": labels.validation.invalidJson,
+          "Deck JSON failed validation": labels.validation.schema,
+          "File missing": labels.validation.required,
+          "File too large": labels.error,
+          "Deck too large": labels.error,
+          "Captcha required": labels.serverErrors.captchaRequired,
+          "Captcha verification failed": labels.serverErrors.captchaFailed,
+          "Rate limit exceeded": labels.serverErrors.rateLimit,
+        };
+        const translated = (message && errorMap[message]) ?? labels.error;
+
+        if (message === "Captcha required" || message === "Captcha verification failed") {
           setCaptchaError(translated);
           resetCaptcha();
-        } else if (message === "Captcha verification failed") {
-          translated = labels.serverErrors.captchaFailed;
-          setCaptchaError(translated);
-          resetCaptcha();
-        } else if (message === "Rate limit exceeded") {
-          translated = labels.serverErrors.rateLimit;
         }
         setErrorMessage(translated);
         setStatus("error");
