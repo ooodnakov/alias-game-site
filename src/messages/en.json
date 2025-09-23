@@ -144,6 +144,13 @@
       "required": "A JSON file is required.",
       "invalidJson": "The provided file is not valid JSON.",
       "schema": "Deck JSON failed validation."
+    },
+    "captchaLabel": "Verification",
+    "captchaHint": "Complete the CAPTCHA challenge so we know you're human.",
+    "serverErrors": {
+      "captchaRequired": "Please complete the CAPTCHA challenge before submitting.",
+      "captchaFailed": "CAPTCHA validation failed. Try again.",
+      "rateLimit": "Too many uploads from your IP address. Please try again later."
     }
   },
   "about": {

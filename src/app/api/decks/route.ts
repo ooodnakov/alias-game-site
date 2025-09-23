@@ -11,6 +11,44 @@ import {
   type DeckStatus,
 } from "@/lib/deck-store";
 import { buildDeckImportUrl, buildDeckJsonUrl } from "@/lib/url";
+import { verifyCaptchaToken } from "@/lib/captcha";
+import { createRateLimiter, type RateLimitResult } from "@/lib/rate-limit";
+
+function parseNumber(value: string | undefined, fallback: number) {
+  if (value === undefined) {
+    return fallback;
+  }
+
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : fallback;
+}
+
+function getClientIp(request: NextRequest) {
+  const forwardedFor = request.headers.get("x-forwarded-for");
+  if (forwardedFor) {
+    const [first] = forwardedFor.split(",");
+    if (first) {
+      return first.trim();
+    }
+  }
+
+  const realIp = request.headers.get("x-real-ip");
+  if (realIp) {
+    return realIp;
+  }
+
+  if (request.ip) {
+    return request.ip;
+  }
+
+  return "unknown";
+}
+
+const deckUploadRateLimiter = createRateLimiter({
+  limit: parseNumber(process.env.DECK_UPLOAD_RATE_LIMIT, 10),
+  window: parseNumber(process.env.DECK_UPLOAD_RATE_WINDOW_SECONDS, 3600),
+  prefix: "deck-upload",
+});
 
 function serializeDeck(deck: DeckMetadata, includeModerationFields: boolean) {
   const base = {
@@ -102,6 +140,8 @@ async function parseDeckPayload(request: NextRequest) {
     const formData = await request.formData();
     const file = formData.get("file");
     const coverUrl = formData.get("coverUrl");
+    const captchaField = formData.get("captchaToken") ?? formData.get("h-captcha-response");
+    const captchaToken = typeof captchaField === "string" ? captchaField : undefined;
 
     if (!(file instanceof File)) {
       throw new Error("File missing");
@@ -127,13 +167,15 @@ async function parseDeckPayload(request: NextRequest) {
     return {
       data: parsedDeck.data,
       coverUrl: typeof coverUrl === "string" ? coverUrl : undefined,
+      captchaToken,
     };
   }
 
   const bodyText = await request.text();
-  let json;
+  let json: Record<string, unknown>;
   try {
-    json = JSON.parse(bodyText);
+    const parsed = JSON.parse(bodyText);
+    json = typeof parsed === "object" && parsed !== null ? (parsed as Record<string, unknown>) : {};
   } catch {
     throw new Error("Invalid JSON");
   }
@@ -146,13 +188,46 @@ async function parseDeckPayload(request: NextRequest) {
   return {
     data: parsedDeck.data,
     coverUrl: undefined,
+    captchaToken: typeof json.captchaToken === "string" ? json.captchaToken : undefined,
   };
 }
 
 export async function POST(request: NextRequest) {
   try {
+    const clientIp = getClientIp(request);
+    let rateLimitResult: RateLimitResult | null = null;
+
+    if (deckUploadRateLimiter.enabled) {
+      rateLimitResult = await deckUploadRateLimiter.check(clientIp);
+
+      if (!rateLimitResult.success) {
+        const retryAfterSeconds = Math.max(0, Math.ceil((rateLimitResult.reset - Date.now()) / 1000));
+        return NextResponse.json(
+          { message: "Rate limit exceeded" },
+          {
+            status: 429,
+            headers: {
+              "Retry-After": String(retryAfterSeconds),
+              "RateLimit-Limit": String(rateLimitResult.limit),
+              "RateLimit-Remaining": String(rateLimitResult.remaining),
+              "RateLimit-Reset": String(Math.ceil(rateLimitResult.reset / 1000)),
+            },
+          },
+        );
+      }
+    }
+
     const isAdmin = requestHasAdminToken(request.headers);
-    const { data, coverUrl } = await parseDeckPayload(request);
+    const { data, coverUrl, captchaToken } = await parseDeckPayload(request);
+
+    const captchaResult = await verifyCaptchaToken(
+      captchaToken,
+      clientIp === "unknown" ? undefined : clientIp,
+    );
+    if (!captchaResult.success) {
+      const message = captchaResult.error === "missing-token" ? "Captcha required" : "Captcha verification failed";
+      return NextResponse.json({ message }, { status: 400 });
+    }
 
     if (data.words.length > 20000) {
       return NextResponse.json({ message: "Deck too large" }, { status: 400 });
@@ -163,13 +238,21 @@ export async function POST(request: NextRequest) {
       status: isAdmin ? "published" : undefined,
     });
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       slug: metadata.slug,
       deckUrl: `/${defaultLocale}/decks/${metadata.slug}`,
       jsonUrl: buildDeckJsonUrl(metadata.slug),
       importUrl: buildDeckImportUrl(metadata.slug),
       status: metadata.status,
     });
+
+    if (rateLimitResult) {
+      response.headers.set("RateLimit-Limit", String(rateLimitResult.limit));
+      response.headers.set("RateLimit-Remaining", String(rateLimitResult.remaining));
+      response.headers.set("RateLimit-Reset", String(Math.ceil(rateLimitResult.reset / 1000)));
+    }
+
+    return response;
   } catch (error) {
     if (error instanceof Error) {
       return NextResponse.json({ message: error.message }, { status: 400 });

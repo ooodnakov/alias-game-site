@@ -46,6 +46,11 @@ npm run lint      # Run ESLint over the project
 - `/api/decks/validate` performs lightweight schema validation so clients can preflight decks before uploading.
 - If you set `DECK_ADMIN_TOKEN`, uploads start as `pending` and require approval via the moderation API/UI. Without the token, decks publish immediately.
 
+## Abuse protection
+
+- Uploads are rate limited per IP. Configure `DECK_UPLOAD_RATE_LIMIT` (requests) and `DECK_UPLOAD_RATE_WINDOW_SECONDS` (window in seconds) to tune the limits. Provide `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` if you want distributed enforcement; otherwise a per-instance in-memory counter is used.
+- Set `HCAPTCHA_SECRET_KEY` and `NEXT_PUBLIC_HCAPTCHA_SITE_KEY` to require an hCaptcha challenge on the deck upload form. Leave them unset to disable the CAPTCHA entirely.
+
 ## Moderation
 
 - Define `DECK_ADMIN_TOKEN` in your environment to enable review workflows.
@@ -73,9 +78,8 @@ Seed decks live in `src/data/sample-decks.ts`. On first connection the MariaDB s
 The current implementation focuses on UX and core persistence. To take it production-ready:
 
 1. Move deck JSON blobs to object storage and keep MariaDB for metadata only.
-2. Add rate limiting and optional CAPTCHA to `/api/decks`.
-3. Connect GitHub OAuth for moderation queues.
-4. Extend translations if new locales are added.
+2. Connect GitHub OAuth for moderation queues.
+3. Extend translations if new locales are added.
 
 ## Docker
 
