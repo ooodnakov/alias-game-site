@@ -1,15 +1,7 @@
 import NextAuth, { getServerSession, type NextAuthOptions } from "next-auth";
 import GitHub from "next-auth/providers/github";
 
-const adminLoginsEnv = process.env.DECK_ADMIN_GITHUB_LOGINS;
-const adminLogins = adminLoginsEnv
-  ? new Set(
-      adminLoginsEnv
-        .split(",")
-        .map((value) => value.trim().toLowerCase())
-        .filter((value) => value.length > 0),
-    )
-  : new Set<string>();
+import { adminLogins } from "./lib/moderation";
 
 export const authOptions: NextAuthOptions = {
   providers: [
@@ -24,8 +16,8 @@ export const authOptions: NextAuthOptions = {
   },
   callbacks: {
     async jwt({ token, profile }) {
-      if (profile && typeof (profile as { login?: unknown }).login === "string") {
-        token.githubLogin = (profile as { login: string }).login.toLowerCase();
+      if (profile && "login" in profile && typeof profile.login === "string") {
+        token.githubLogin = profile.login.toLowerCase();
       }
 
       if (typeof token.githubLogin === "string") {

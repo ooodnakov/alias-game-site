@@ -7,6 +7,7 @@ import { DeckSchema, type Deck } from "@/lib/deck-schema";
 import { getDatabasePool } from "@/lib/db";
 import { sha256FromString } from "@/lib/hash";
 import { createSlug } from "@/lib/slug";
+import { isModerationEnabled } from "@/lib/moderation";
 
 export type DeckStatus = "published" | "pending" | "rejected";
 
@@ -631,10 +632,7 @@ export async function createDeck(
       ? options.coverUrl
       : normalized.metadata.coverImage;
   const tags = normalized.metadata.categories ?? [];
-  const adminLoginsEnv = process.env.DECK_ADMIN_GITHUB_LOGINS ?? "";
-  const hasModeration = adminLoginsEnv
-    .split(",")
-    .some((value) => value.trim().length > 0);
+  const hasModeration = isModerationEnabled();
   const status = options.status ?? (hasModeration ? "pending" : "published");
   const rejectionReason =
     status === "rejected"
