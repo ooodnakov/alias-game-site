@@ -183,7 +183,9 @@ export async function fetchDeckJson(url: string): Promise<Deck> {
   });
 
   if (!response.ok) {
-    throw new Error(`Failed to fetch deck JSON from storage (status ${response.status}).`);
+    throw new Error(
+      `Failed to fetch deck JSON from ${url} (status ${response.status}).`,
+    );
   }
 
   return (await response.json()) as Deck;

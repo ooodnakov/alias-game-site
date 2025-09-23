@@ -488,7 +488,14 @@ async function dropLegacyDeckJsonColumn() {
     return;
   }
 
-  await pool.query("ALTER TABLE decks DROP COLUMN deck_json").catch(() => {});
+  await pool
+    .query("ALTER TABLE decks DROP COLUMN deck_json")
+    .catch((error) =>
+      console.warn(
+        "Failed to drop legacy 'deck_json' column, it may have been removed already:",
+        error,
+      ),
+    );
 }
 
 async function ensureReady() {
