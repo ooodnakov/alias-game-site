@@ -13,7 +13,8 @@ export async function GET(
   if (!slug) {
     return NextResponse.json({ message: "Deck not found" }, { status: 404 });
   }
-  const includeUnpublished = requestHasAdminToken(request.headers);
+  const session = await auth();
+  const includeUnpublished = Boolean(session?.user?.isAdmin);
   const record = await getDeckBySlug(slug, {
     includeUnpublished,
   });

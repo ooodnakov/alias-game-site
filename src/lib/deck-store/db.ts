@@ -15,7 +15,6 @@ import type {
   DeckFacets,
   DeckFilters,
   DeckMetadata,
-  DeckRecord,
   DeckSearchResult,
   DeckStatus,
   DeckStore,

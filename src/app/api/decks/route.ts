@@ -222,7 +222,8 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const isAdmin = requestHasAdminToken(request.headers);
+    const session = await auth();
+    const isAdmin = Boolean(session?.user?.isAdmin);
     const { data, coverUrl, captchaToken } = await parseDeckPayload(request);
 
     const captchaResult = await verifyCaptchaToken(
