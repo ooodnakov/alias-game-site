@@ -8,6 +8,7 @@ import { getDatabasePool } from "@/lib/db";
 import { sha256FromString } from "@/lib/hash";
 import { createSlug } from "@/lib/slug";
 import { fetchDeckJson, uploadDeckJson } from "@/lib/storage";
+import { isModerationEnabled } from "@/lib/moderation";
 
 export type DeckStatus = "published" | "pending" | "rejected";
 
@@ -700,7 +701,7 @@ export async function createDeck(
       ? options.coverUrl
       : normalized.metadata.coverImage;
   const tags = normalized.metadata.categories ?? [];
-  const hasModeration = Boolean(process.env.DECK_ADMIN_TOKEN?.length);
+  const hasModeration = isModerationEnabled();
   const status = options.status ?? (hasModeration ? "pending" : "published");
   const rejectionReason =
     status === "rejected"

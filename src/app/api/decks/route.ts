@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 
+import { auth } from "@/auth";
 import { defaultLocale } from "@/i18n/config";
-import { requestHasAdminToken } from "@/lib/admin-auth";
 import { DeckSchema, type Deck } from "@/lib/deck-schema";
 import {
   createDeck,
@@ -31,7 +31,8 @@ function serializeDeck(deck: DeckMetadata, includeModerationFields: boolean) {
 
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
-  const isAdmin = requestHasAdminToken(request.headers);
+  const session = await auth();
+  const isAdmin = Boolean(session?.user?.isAdmin);
 
   const query = searchParams.get("q") ?? undefined;
   const language = searchParams.get("language") ?? undefined;
@@ -151,7 +152,8 @@ async function parseDeckPayload(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const isAdmin = requestHasAdminToken(request.headers);
+    const session = await auth();
+    const isAdmin = Boolean(session?.user?.isAdmin);
     const { data, coverUrl } = await parseDeckPayload(request);
 
     if (data.words.length > 20000) {
