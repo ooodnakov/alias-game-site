@@ -37,6 +37,7 @@ export async function generateMetadata({
 
 export default async function DeckUploadPage() {
   const t = await getTranslations("upload");
+  const captchaSiteKey = process.env.NEXT_PUBLIC_HCAPTCHA_SITE_KEY;
 
   return (
     <div className="bg-surface-muted/40 py-16">
@@ -59,6 +60,17 @@ export default async function DeckUploadPage() {
               required: t("validation.required"),
               invalidJson: t("validation.invalidJson"),
               schema: t("validation.schema"),
+            },
+            captcha: captchaSiteKey
+              ? {
+                  label: t("captchaLabel"),
+                  hint: t("captchaHint"),
+                }
+              : undefined,
+            serverErrors: {
+              captchaRequired: t("serverErrors.captchaRequired"),
+              captchaFailed: t("serverErrors.captchaFailed"),
+              rateLimit: t("serverErrors.rateLimit"),
             },
           }}
         />
