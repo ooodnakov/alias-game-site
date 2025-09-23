@@ -44,14 +44,17 @@ npm run lint      # Run ESLint over the project
 - `/api/decks` provides a JSON API for searching decks and uploading new ones. Uploads validate against the shared Zod schema and compute checksums before persisting the deck.
 - `/decks/[slug].json` serves a canonical JSON file suitable for the Android app import flow (`alias://import?deck=...`).
 - `/api/decks/validate` performs lightweight schema validation so clients can preflight decks before uploading.
-- If you set `DECK_ADMIN_TOKEN`, uploads start as `pending` and require approval via the moderation API/UI. Without the token, decks publish immediately.
+- If you configure moderator GitHub accounts via `DECK_ADMIN_GITHUB_LOGINS`, uploads from non-admin users start as `pending` and require approval via the moderation UI. Uploads from signed-in admins publish immediately.
 
 ## Moderation
 
-- Define `DECK_ADMIN_TOKEN` in your environment to enable review workflows.
-- Visit `/<locale>/admin/decks` (for example `/en/admin/decks`) and enter the token to view pending submissions.
-- Approve or reject decks directly from the admin screen—actions call `POST /api/decks/moderate` with the same token in the `X-Admin-Token` header.
-- Requests that filter unpublished decks via `/api/decks?status=pending` also require the token. Published deck queries continue to work anonymously.
+- Configure GitHub OAuth by setting the following environment variables:
+  - `GITHUB_ID` and `GITHUB_SECRET`: credentials for your GitHub OAuth app.
+  - `AUTH_SECRET`: a random string used to encrypt NextAuth sessions (generate with `openssl rand -base64 32`).
+  - `DECK_ADMIN_GITHUB_LOGINS`: comma-separated GitHub usernames that should have moderation access.
+- Visit `/<locale>/admin/decks` (for example `/en/admin/decks`) and sign in with GitHub to view pending submissions.
+- Approve or reject decks directly from the admin screen—requests are authenticated with the signed-in session.
+- Admin-only filters such as `/api/decks?status=pending` and `/api/decks/moderate` require an authenticated moderator. Published deck queries continue to work anonymously.
 
 ## Adding new decks
 

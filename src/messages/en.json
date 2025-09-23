@@ -159,15 +159,20 @@
   "admin": {
     "title": "Deck moderation",
     "intro": "Review pending uploads, approve quality decks, and reject those that don't fit the guidelines.",
-    "token": {
-      "label": "Admin token",
-      "placeholder": "Token from the DECK_ADMIN_TOKEN environment variable",
-      "save": "Save token",
-      "clear": "Clear token"
+    "signIn": {
+      "title": "GitHub sign-in required",
+      "description": "Sign in with GitHub to access the moderation queue.",
+      "cta": "Sign in with GitHub"
     },
+    "unauthorized": {
+      "title": "You don't have access",
+      "description": "You're signed in as {user}, but you're not on the moderation team.",
+      "unknownUser": "this account"
+    },
+    "signOut": "Sign out",
     "refresh": "Refresh",
     "loading": "Loading pending decks…",
-    "loadError": "Unable to load decks. Check the token and try again.",
+    "loadError": "Unable to load decks. Please try again.",
     "actionError": "We couldn't update that deck. Please try again.",
     "rejectionPrompt": "Provide a reason for rejecting this deck",
     "rejectionRequired": "A rejection reason is required.",
