@@ -1,0 +1,189 @@
+{
+  "nav": {
+    "home": "Home",
+    "decks": "Decks",
+    "about": "About",
+    "upload": "Upload",
+    "download": "Download APK"
+  },
+  "footer": {
+    "madeWith": "Made with care for parties",
+    "github": "GitHub",
+    "issues": "Report an issue",
+    "license": "MIT License"
+  },
+  "meta": {
+    "landing": {
+      "title": "Alias – community decks & Android download",
+      "description": "Browse curated decks for the Alias word game, import them on Android, and upload your own contributions."
+    },
+    "decks": {
+      "title": "Browse Alias decks",
+      "description": "Filter community-made Alias decks by language, difficulty, categories, and tags."
+    },
+    "upload": {
+      "title": "Upload an Alias deck",
+      "description": "Validate your Alias deck JSON, add an optional cover, and share it with the community."
+    },
+    "about": {
+      "title": "About the Alias project",
+      "description": "Learn how Alias keeps gameplay private, how decks are moderated, and how to contribute."
+    },
+    "admin": {
+      "title": "Moderate community decks",
+      "description": "Review pending Alias deck submissions and publish or reject them."
+    }
+  },
+  "landing": {
+    "hero": {
+      "title": "Alias – the offline party word game",
+      "tagline": "Fast rounds, smart hints, and zero trackers.",
+      "download": "Download APK",
+      "note": "No telemetry, no ads, works offline.",
+      "github": "Source on GitHub",
+      "browseDecks": "Browse decks"
+    },
+    "features": {
+      "title": "Why players love Alias",
+      "items": {
+        "teams": {
+          "title": "2–6 teams",
+          "description": "Flexible scoring for couples or big gatherings."
+        },
+        "swipe": {
+          "title": "Swipe controls",
+          "description": "Mark correct or skip cards with one thumb."
+        },
+        "layout": {
+          "title": "One-handed layout",
+          "description": "Designed to be held and played by the host."
+        },
+        "target": {
+          "title": "Score to target",
+          "description": "Race teams to a configurable finish line."
+        },
+        "tutorial": {
+          "title": "Tutorial overlays",
+          "description": "Introduce new players with contextual tips."
+        }
+      }
+    },
+    "decks": {
+      "title": "Fresh community decks",
+      "subtitle": "Validated imports from trusted creators.",
+      "viewAll": "Browse all decks"
+    },
+    "screenshots": {
+      "title": "Peek inside the app",
+      "captions": {
+        "game": "Round timer with quick swipe scoring.",
+        "filters": "Filter decks by language, category, and difficulty.",
+        "history": "Graphs that show progress over the night."
+      }
+    },
+    "cta": {
+      "title": "Ready to play?",
+      "download": "Get the Android app",
+      "browse": "Explore decks",
+      "github": "View source"
+    }
+  },
+  "decks": {
+    "title": "Deck gallery",
+    "searchPlaceholder": "Search decks",
+    "filters": {
+      "language": "Language",
+      "difficultyMin": "Min difficulty",
+      "difficultyMax": "Max difficulty",
+      "categories": "Categories",
+      "tags": "Tags",
+      "nsfw": "Show NSFW",
+      "apply": "Apply filters",
+      "reset": "Reset"
+    },
+    "empty": "No decks matched your filters.",
+    "words": "words",
+    "nsfw": "NSFW",
+    "import": "Import to Alias",
+    "copyJson": "Copy JSON URL",
+    "copied": "Copied!",
+    "metadata": {
+      "language": "Language",
+      "difficulty": "Difficulty",
+      "categories": "Categories",
+      "wordClasses": "Word classes",
+      "tags": "Tags",
+      "wordCount": "Word count",
+      "sha256": "SHA-256 checksum",
+      "created": "Created",
+      "updated": "Updated",
+      "nsfw": "Includes mature content"
+    },
+    "details": {
+      "sample": "Sample words",
+      "deepLink": "Deep link"
+    },
+    "pagination": {
+      "next": "Next",
+      "previous": "Previous"
+    },
+    "back": "Back to gallery"
+  },
+  "upload": {
+    "title": "Upload a deck",
+    "intro": "Validate your deck JSON and share it with the community.",
+    "jsonLabel": "Deck JSON file",
+    "jsonHint": "Upload a JSON file that matches the Alias schema.",
+    "coverLabel": "Cover image URL",
+    "coverHint": "Optional HTTPS image that represents your deck.",
+    "submit": "Submit deck",
+    "successPending": "Deck submitted! It will appear once approved.",
+    "successPublished": "Deck published instantly! It's live in the gallery.",
+    "error": "We could not process that deck. Check the JSON and try again.",
+    "validation": {
+      "required": "A JSON file is required.",
+      "invalidJson": "The provided file is not valid JSON.",
+      "schema": "Deck JSON failed validation."
+    }
+  },
+  "about": {
+    "title": "About Alias",
+    "intro": "Alias is a privacy-first party word game built by Aleksandr Odnakov.",
+    "values": [
+      "Offline-first gameplay. No accounts, no analytics.",
+      "Community-driven decks moderated for quality.",
+      "Open source app and website so anyone can contribute."
+    ],
+    "contact": "Questions or ideas? Open an issue on GitHub."
+  },
+  "admin": {
+    "title": "Deck moderation",
+    "intro": "Review pending uploads, approve quality decks, and reject those that don't fit the guidelines.",
+    "token": {
+      "label": "Admin token",
+      "placeholder": "Token from the DECK_ADMIN_TOKEN environment variable",
+      "save": "Save token",
+      "clear": "Clear token"
+    },
+    "refresh": "Refresh",
+    "loading": "Loading pending decks…",
+    "loadError": "Unable to load decks. Check the token and try again.",
+    "actionError": "We couldn't update that deck. Please try again.",
+    "rejectionPrompt": "Provide a reason for rejecting this deck",
+    "rejectionRequired": "A rejection reason is required.",
+    "approve": "Approve",
+    "reject": "Reject",
+    "empty": "No decks are waiting for review.",
+    "status": {
+      "published": "Published",
+      "pending": "Pending",
+      "rejected": "Rejected"
+    }
+  },
+  "notFound": {
+    "title": "Page not found",
+    "description": "The page you tried to open doesn't exist or has moved.",
+    "ctaHome": "Go to homepage",
+    "ctaDecks": "Browse decks"
+  }
+}
