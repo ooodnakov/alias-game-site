@@ -1,0 +1,36 @@
+services:
+  db:
+    image: mariadb:11
+    environment:
+      MARIADB_ROOT_PASSWORD: rootpass
+      MARIADB_DATABASE: alias
+      MARIADB_USER: alias
+      MARIADB_PASSWORD: alias
+    ports:
+      - "3306:3306"
+    volumes:
+      - db-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  web:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_USER: alias
+      DB_PASSWORD: alias
+      DB_NAME: alias
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+
+volumes:
+  db-data:

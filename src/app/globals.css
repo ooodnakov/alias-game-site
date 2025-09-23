@@ -1,0 +1,69 @@
+@import "tailwindcss";
+
+:root {
+  color-scheme: light;
+  --surface: #f8fafc;
+  --surface-foreground: #0f1729;
+  --surface-muted: #e2e8f0;
+  --primary: #2563eb;
+  --primary-foreground: #f8fafc;
+  --secondary: #f1f5f9;
+  --secondary-foreground: #0f1729;
+  --muted: #e2e8f0;
+  --muted-foreground: #475569;
+  --border: rgba(15, 23, 41, 0.08);
+  --radius: 16px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --surface: #0f1729;
+    --surface-foreground: #e2e8f0;
+    --surface-muted: #1e293b;
+    --primary: #60a5fa;
+    --primary-foreground: #020817;
+    --secondary: #1e293b;
+    --secondary-foreground: #e2e8f0;
+    --muted: #1e293b;
+    --muted-foreground: #94a3b8;
+    --border: rgba(226, 232, 240, 0.12);
+  }
+}
+
+@theme inline {
+  --color-surface: var(--surface);
+  --color-foreground: var(--surface-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-border: var(--border);
+  --font-sans: var(--font-geist-sans);
+}
+
+body {
+  background: var(--surface);
+  color: var(--surface-foreground);
+  font-family: var(--font-geist-sans), system-ui, -apple-system, sans-serif;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: none;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+button {
+  border-radius: var(--radius);
+}
