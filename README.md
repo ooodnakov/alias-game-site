@@ -40,11 +40,40 @@ npm run lint      # Run ESLint over the project
 
 ## Deck workflow
 
-- Deck metadata and JSON payloads live in a MariaDB table managed by `src/lib/deck-store.ts`. The module normalises uploads with Zod, generates slugs, computes SHA-256 hashes, and issues SQL queries for search and pagination.
+- Deck metadata lives in MariaDB while normalised deck JSON blobs are uploaded to object storage via `src/lib/storage.ts`. The database keeps the returned public URL in the `json_path` column alongside SHA-256 hashes, search text, and moderation state.
+- On startup the store backfills any legacy `deck_json` payloads into object storage before dropping the old column, so upgrading instances automatically migrate existing decks.
 - `/api/decks` provides a JSON API for searching decks and uploading new ones. Uploads validate against the shared Zod schema and compute checksums before persisting the deck.
-- `/decks/[slug].json` serves a canonical JSON file suitable for the Android app import flow (`alias://import?deck=...`).
+- `/decks/[slug].json` now streams each deck directly from the configured bucket/CDN and keeps public caching headers for the Android app import flow (`alias://import?deck=...`).
 - `/api/decks/validate` performs lightweight schema validation so clients can preflight decks before uploading.
 - If you set `DECK_ADMIN_TOKEN`, uploads start as `pending` and require approval via the moderation API/UI. Without the token, decks publish immediately.
+
+## Storage configuration
+
+The storage helper supports S3-compatible services (AWS S3, Cloudflare R2, MinIO, etc.) and Supabase Storage. Deck JSON files are stored under `<prefix>/<slug>.json`, where the prefix defaults to `decks`. Configure credentials through the following environment variables:
+
+- `DECK_STORAGE_DRIVER`: Set to `s3`, `r2`, or `supabase`.
+- `DECK_STORAGE_BUCKET`: Bucket or container that will hold deck JSON (`alias-decks` is a good default).
+- `DECK_STORAGE_PREFIX`: Optional folder/prefix inside the bucket (defaults to `decks`).
+- `DECK_STORAGE_PUBLIC_BASE_URL`: Base URL that exposes the bucket via HTTPS/CDN (for example `https://cdn.example.com`). Required for R2 and recommended for S3/Supabase.
+
+### S3 / R2
+
+Provide the standard access keys alongside the region. For R2 or other S3-compatible providers set a custom endpoint and, if necessary, force path-style requests.
+
+- `DECK_STORAGE_S3_REGION`
+- `DECK_STORAGE_S3_ACCESS_KEY_ID`
+- `DECK_STORAGE_S3_SECRET_ACCESS_KEY`
+- `DECK_STORAGE_S3_ENDPOINT` (optional for custom hosts such as `https://<account>.r2.cloudflarestorage.com`)
+- `DECK_STORAGE_S3_FORCE_PATH_STYLE` (optional, set to `true` to avoid virtual-hosted URLs)
+
+### Supabase Storage
+
+Create a public bucket (for example `alias-decks`) and supply:
+
+- `DECK_STORAGE_SUPABASE_URL`
+- `DECK_STORAGE_SUPABASE_SERVICE_ROLE_KEY`
+
+The helper uses the Supabase Storage API to upload decks and request a public URL. You can override the generated URL by setting `DECK_STORAGE_PUBLIC_BASE_URL` to a custom domain or CDN edge.
 
 ## Moderation
 
@@ -55,7 +84,7 @@ npm run lint      # Run ESLint over the project
 
 ## Adding new decks
 
-Seed decks live in `src/data/sample-decks.ts`. On first connection the MariaDB store creates its schema and inserts those demo decks, so the gallery and API have data immediately. Subsequent uploads are written directly to the `decks` table with their canonical JSON payload alongside metadata.
+Seed decks live in `src/data/sample-decks.ts`. On first connection the MariaDB store creates its schema and inserts those demo decks, uploading their JSON blobs to the configured storage bucket so the gallery and API have data immediately. Subsequent uploads follow the same flow—metadata lands in MariaDB while the normalised deck file is pushed to object storage.
 
 ## Accessibility and performance
 
@@ -72,10 +101,9 @@ Seed decks live in `src/data/sample-decks.ts`. On first connection the MariaDB s
 
 The current implementation focuses on UX and core persistence. To take it production-ready:
 
-1. Move deck JSON blobs to object storage and keep MariaDB for metadata only.
-2. Add rate limiting and optional CAPTCHA to `/api/decks`.
-3. Connect GitHub OAuth for moderation queues.
-4. Extend translations if new locales are added.
+1. Add rate limiting and optional CAPTCHA to `/api/decks`.
+2. Connect GitHub OAuth for moderation queues.
+3. Extend translations if new locales are added.
 
 ## Docker
 
