@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 
+import { auth } from "@/auth";
 import { defaultLocale } from "@/i18n/config";
-import { requestHasAdminToken } from "@/lib/admin-auth";
 import { getDeckBySlug } from "@/lib/deck-store";
 import { buildDeckImportUrl, buildDeckJsonUrl } from "@/lib/url";
 

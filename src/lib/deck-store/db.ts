@@ -8,6 +8,8 @@ import { getDatabasePool } from "@/lib/db";
 import { sha256FromString } from "@/lib/hash";
 import { createSlug } from "@/lib/slug";
 
+import { fetchDeckJson, uploadDeckJson } from "@/lib/storage";
+import { isModerationEnabled } from "@/lib/moderation";
 import { buildSearchText, computeDifficultyRange, normalizeDeck } from "./utils";
 import type {
   DeckFacets,
@@ -44,8 +46,11 @@ interface DeckMetadataRow extends RowDataPacket {
   rejection_reason: string | null;
 }
 
-interface DeckRecordRow extends DeckMetadataRow {
+interface LegacyDeckRow extends RowDataPacket {
+  id: string;
+  slug: string;
   deck_json: string | null;
+  json_path: string | null;
 }
 
 let initPromise: Promise<void> | null = null;
@@ -99,13 +104,6 @@ function mapRowToMetadata(row: DeckMetadataRow): DeckMetadata {
   };
 }
 
-function mapRowToRecord(row: DeckRecordRow): DeckRecord {
-  const metadata = mapRowToMetadata(row);
-  const rawDeck = row.deck_json ?? "{}";
-  const deck = JSON.parse(rawDeck) as Deck;
-  return { metadata, deck };
-}
-
 async function ensureSchema() {
   const pool = getDatabasePool();
   await pool.query(`
@@ -121,7 +119,7 @@ async function ensureSchema() {
       word_classes JSON NOT NULL,
       word_count INT NOT NULL,
       cover_url TEXT NULL,
-      json_path VARCHAR(255) NOT NULL,
+      json_path TEXT NOT NULL,
       sha256 CHAR(64) NOT NULL,
       nsfw TINYINT(1) NOT NULL DEFAULT 0,
       created_at VARCHAR(32) NOT NULL,
@@ -130,7 +128,6 @@ async function ensureSchema() {
       description TEXT NULL,
       tags JSON NOT NULL,
       sample_words JSON NOT NULL,
-      deck_json JSON NOT NULL,
       search_text TEXT NOT NULL,
       status ENUM('published', 'pending', 'rejected') NOT NULL DEFAULT 'published',
       rejection_reason TEXT NULL,
@@ -149,6 +146,9 @@ async function ensureSchema() {
     .query("ALTER TABLE decks ADD COLUMN rejection_reason TEXT NULL")
     .catch(() => {});
   await pool.query("ALTER TABLE decks ADD INDEX idx_decks_status (status)").catch(() => {});
+  await pool
+    .query("ALTER TABLE decks MODIFY COLUMN json_path TEXT NOT NULL")
+    .catch(() => {});
 }
 
 async function slugExists(slug: string) {
@@ -195,7 +195,7 @@ async function seedDatabase() {
     if (await slugExists(finalSlug)) {
       continue;
     }
-    const jsonPath = `/decks/${finalSlug}.json`;
+    const storage = await uploadDeckJson(finalSlug, normalized);
     const sha256 = sha256FromString(JSON.stringify(normalized));
     const difficulty = computeDifficultyRange(normalized.words);
     const status = seed.status ?? "published";
@@ -216,7 +216,7 @@ async function seedDatabase() {
       wordClasses: normalized.metadata.wordClasses ?? [],
       wordCount: normalized.words.length,
       coverUrl: normalized.metadata.coverImage,
-      jsonPath,
+      jsonPath: storage.url,
       sha256,
       nsfw: normalized.allowNSFW,
       createdAt: seed.createdAt,
@@ -251,7 +251,6 @@ async function seedDatabase() {
         description,
         tags,
         sample_words,
-        deck_json,
         search_text,
         status,
         rejection_reason
@@ -276,7 +275,6 @@ async function seedDatabase() {
         :description,
         :tags,
         :sample_words,
-        :deck_json,
         :search_text,
         :status,
         :rejection_reason
@@ -302,7 +300,6 @@ async function seedDatabase() {
         description: metadata.description ?? null,
         tags: JSON.stringify(metadata.tags),
         sample_words: JSON.stringify(metadata.sampleWords),
-        deck_json: JSON.stringify(normalized),
         search_text: buildSearchText({
           title: metadata.title,
           author: metadata.author,
@@ -311,16 +308,73 @@ async function seedDatabase() {
         }),
         status: metadata.status,
         rejection_reason: rejectionReason,
+    },
+    );
+  }
+}
+
+
+async function backfillLegacyDeckBlobs() {
+  const pool = getDatabasePool();
+  const [columns] = await pool.query<RowDataPacket[]>("SHOW COLUMNS FROM decks LIKE 'deck_json'");
+  if (!columns.length) {
+    return;
+  }
+
+  const [rows] = await pool.query<LegacyDeckRow[]>(
+    `SELECT id, slug, deck_json, json_path
+     FROM decks
+     WHERE deck_json IS NOT NULL
+       AND (json_path IS NULL OR json_path = '' OR json_path NOT LIKE 'http%')`,
+  );
+
+  for (const row of rows) {
+    if (!row.deck_json) {
+      continue;
+    }
+
+    let deck: Deck;
+    try {
+      deck = JSON.parse(row.deck_json) as Deck;
+    } catch (error) {
+      throw new Error(`Failed to parse legacy deck JSON for slug "${row.slug}": ${error}`);
+    }
+
+    const storage = await uploadDeckJson(row.slug, deck);
+    await pool.execute(
+      `UPDATE decks SET json_path = :json_path WHERE id = :id`,
+      {
+        json_path: storage.url,
+        id: row.id,
       },
     );
   }
+}
+
+async function dropLegacyDeckJsonColumn() {
+  const pool = getDatabasePool();
+  const [columns] = await pool.query<RowDataPacket[]>("SHOW COLUMNS FROM decks LIKE 'deck_json'");
+  if (!columns.length) {
+    return;
+  }
+
+  await pool
+    .query("ALTER TABLE decks DROP COLUMN deck_json")
+    .catch((error) =>
+      console.warn(
+        "Failed to drop legacy 'deck_json' column, it may have been removed already:",
+        error,
+      ),
+    );
 }
 
 async function ensureReady() {
   if (!initPromise) {
     initPromise = (async () => {
       await ensureSchema();
+      await backfillLegacyDeckBlobs();
       await seedDatabase();
+      await dropLegacyDeckJsonColumn();
     })();
   }
 
@@ -369,7 +423,7 @@ async function listAllDeckMetadata(options: { statuses?: DeckStatus[] } = {}) {
   return rows.map((row) => mapRowToMetadata(row));
 }
 
-async function getDeckBySlug(
+export async function getDeckMetadataBySlug(
   slug: string,
   options: { includeUnpublished?: boolean; statuses?: DeckStatus[] } = {},
 ) {
@@ -391,11 +445,29 @@ async function getDeckBySlug(
 
   query += ` LIMIT 1`;
 
-  const [rows] = await pool.query<DeckRecordRow[]>(query, params);
+  const [rows] = await pool.query<DeckMetadataRow[]>(query, params);
   if (!rows.length) {
     return null;
   }
-  return mapRowToRecord(rows[0]);
+  return mapRowToMetadata(rows[0]);
+}
+
+export async function getDeckBySlug(
+  slug: string,
+  options: { includeUnpublished?: boolean; statuses?: DeckStatus[] } = {},
+) {
+  const metadata = await getDeckMetadataBySlug(slug, options);
+  if (!metadata) {
+    return null;
+  }
+
+  try {
+    const deck = await fetchDeckJson(metadata.jsonPath);
+    return { metadata, deck };
+  } catch (error) {
+    console.error(`Failed to fetch deck JSON for slug "${slug}":`, error);
+    return null;
+  }
 }
 
 async function searchDecks(filters: DeckFilters = {}): Promise<DeckSearchResult> {
@@ -491,8 +563,6 @@ async function createDeck(
   const pool = getDatabasePool();
   const normalized = normalizeDeck(deckInput);
   const slug = await generateUniqueSlug(normalized.title);
-  const jsonPath = `/decks/${slug}.json`;
-  const sha256 = sha256FromString(JSON.stringify(normalized));
   const difficulty = computeDifficultyRange(normalized.words);
   const now = new Date().toISOString();
   const coverUrl =
@@ -500,12 +570,22 @@ async function createDeck(
       ? options.coverUrl
       : normalized.metadata.coverImage;
   const tags = normalized.metadata.categories ?? [];
-  const hasModeration = Boolean(process.env.DECK_ADMIN_TOKEN?.length);
+  const hasModeration = isModerationEnabled();
   const status = options.status ?? (hasModeration ? "pending" : "published");
   const rejectionReason =
     status === "rejected"
       ? options.rejectionReason?.trim() || null
       : null;
+
+  const deckForStorage: Deck = {
+    ...normalized,
+    metadata: {
+      ...normalized.metadata,
+      coverImage: coverUrl ?? normalized.metadata.coverImage,
+    },
+  };
+  const sha256 = sha256FromString(JSON.stringify(deckForStorage));
+  const storage = await uploadDeckJson(slug, deckForStorage);
 
   const metadata: DeckMetadata = {
     id: randomUUID(),
@@ -519,7 +599,7 @@ async function createDeck(
     wordClasses: normalized.metadata.wordClasses ?? [],
     wordCount: normalized.words.length,
     coverUrl: coverUrl ?? undefined,
-    jsonPath,
+    jsonPath: storage.url,
     sha256,
     nsfw: normalized.allowNSFW,
     createdAt: now,
@@ -554,7 +634,6 @@ async function createDeck(
       description,
       tags,
       sample_words,
-      deck_json,
       search_text,
       status,
       rejection_reason
@@ -579,7 +658,6 @@ async function createDeck(
       :description,
       :tags,
       :sample_words,
-      :deck_json,
       :search_text,
       :status,
       :rejection_reason
@@ -605,13 +683,6 @@ async function createDeck(
       description: metadata.description ?? null,
       tags: JSON.stringify(metadata.tags),
       sample_words: JSON.stringify(metadata.sampleWords),
-      deck_json: JSON.stringify({
-        ...normalized,
-        metadata: {
-          ...normalized.metadata,
-          coverImage: coverUrl ?? normalized.metadata.coverImage,
-        },
-      }),
       search_text: buildSearchText({
         title: metadata.title,
         author: metadata.author,
