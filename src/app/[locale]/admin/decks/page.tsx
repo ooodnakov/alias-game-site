@@ -4,6 +4,7 @@ import { getTranslations } from "next-intl/server";
 import { auth } from "@/auth";
 import { GitHubSignInButton, SignOutButton } from "@/components/auth-buttons";
 import { AdminDeckModeration } from "@/components/admin-deck-moderation";
+import { type AppLocale } from "@/i18n/config";
 
 export const dynamic = "force-dynamic";
 
@@ -42,12 +43,13 @@ export async function generateMetadata({
 export default async function AdminDecksPage({
   params,
 }: {
-  params: { locale: AppLocale };
+  params: Promise<{ locale: AppLocale }>;
 }) {
+  const { locale } = await params;
   const [t, decksT] = await Promise.all([getTranslations("admin"), getTranslations("decks")]);
   const session = await auth();
   const isAdmin = Boolean(session?.user?.isAdmin);
-  const callbackUrl = `/${params.locale}/admin/decks`;
+  const callbackUrl = `/${locale}/admin/decks`;
 
   const heading = (
     <div className="space-y-3">
@@ -87,7 +89,7 @@ export default async function AdminDecksPage({
               <p>{t("unauthorized.description", { user: displayName })}</p>
             </div>
             <div className="flex flex-wrap gap-3">
-              <SignOutButton label={t("signOut")} callbackUrl={`/${params.locale}`} />
+              <SignOutButton label={t("signOut")} callbackUrl={`/${locale}`} />
             </div>
           </div>
         </div>

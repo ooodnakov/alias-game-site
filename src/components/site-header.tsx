@@ -23,7 +23,7 @@ export async function SiteHeader() {
         <div className="flex items-center gap-3">
           <Button asChild size="sm">
             <Link
-              href="https://github.com/aodnakov/alias-game/releases/latest"
+              href="https://github.com/ooodnakov/alias-game/releases/latest"
               target="_blank"
               rel="noreferrer"
             >

@@ -46,7 +46,7 @@ export async function GET(
       headers,
     });
   } catch (error) {
-    console.error(`Failed to stream deck JSON for slug "${params.slug}":`, error);
+    console.error(`Failed to stream deck JSON for slug "${slug}":`, error);
     return NextResponse.json({ message: "Deck file unavailable" }, { status: 502 });
   }
 }

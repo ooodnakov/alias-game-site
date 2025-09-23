@@ -141,3 +141,5 @@ vite.config.ts.timestamp-*
 # PNPM
 pnpm-lock.yaml
 pnpm-workspace.yaml
+
+db-data/

@@ -24,10 +24,6 @@ function parseNumber(value: string | undefined, fallback: number) {
 }
 
 function getClientIp(request: NextRequest) {
-  if (request.ip) {
-    return request.ip;
-  }
-
   const forwardedFor = request.headers.get("x-forwarded-for");
   if (forwardedFor) {
     const parts = forwardedFor

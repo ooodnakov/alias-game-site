@@ -1,6 +1,7 @@
 services:
   db:
     image: mariadb:11
+    container_name: aliasdb
     environment:
       MARIADB_ROOT_PASSWORD: rootpass
       MARIADB_DATABASE: alias
@@ -9,28 +10,42 @@ services:
     ports:
       - "3306:3306"
     volumes:
-      - db-data:/var/lib/mysql
+      - ./db-data:/var/lib/mysql
     healthcheck:
       test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
       interval: 10s
       timeout: 5s
       retries: 10
+    networks:
+      - alias-site
 
   web:
     build: .
     depends_on:
       db:
         condition: service_healthy
-    environment:
-      NODE_ENV: production
-      DB_HOST: db
-      DB_PORT: 3306
-      DB_USER: alias
-      DB_PASSWORD: alias
-      DB_NAME: alias
+    container_name: aliasoss
+    env_file:
+      - .env
+    user: root
     ports:
       - "3000:3000"
+    volumes:
+      - .:/app
+      - nextjs_cache:/app/.next
+    command: ["sh", "-c", "echo 'Building from mounted local files' && echo 'DB_HOST='$DB_HOST && ls -la /app && echo 'Waiting for DB' && while ! nc -z db 3306; do sleep 1; done && echo 'DB ready' && rm -rf .next || true && pnpm run build && echo 'Build complete' && pnpm run dev"]
     restart: unless-stopped
+    networks:
+      - proxy
+      - alias-site
 
 volumes:
-  db-data:
+ nextjs_cache:
+
+networks:
+  proxy:
+    external: true
+    name: proxy
+  alias-site:
+    external: true
+    name: alias-site
