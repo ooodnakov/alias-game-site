@@ -1,13 +1,16 @@
 import { NextResponse } from "next/server";
 
-import { getDeckMetadataBySlug } from "@/lib/deck-store";
+import { getDeckMetadataBySlug } from "@/lib/deck-store/db";
 
-interface Params {
-  params: { slug: string };
-}
-
-export async function GET(_request: Request, { params }: Params) {
-  const metadata = await getDeckMetadataBySlug(params.slug);
+export async function GET(
+  _request: Request,
+  context: { params: Promise<Record<string, string>> },
+) {
+  const { slug } = await context.params;
+  if (!slug) {
+    return NextResponse.json({ message: "Deck not found" }, { status: 404 });
+  }
+  const metadata = await getDeckMetadataBySlug(slug);
 
   if (!metadata) {
     return NextResponse.json({ message: "Deck not found" }, { status: 404 });

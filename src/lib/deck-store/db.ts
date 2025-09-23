@@ -3,84 +3,23 @@ import { randomUUID } from "node:crypto";
 import type { ResultSetHeader, RowDataPacket } from "mysql2/promise";
 
 import { sampleDeckSeeds } from "@/data/sample-decks";
-import { DeckSchema, type Deck } from "@/lib/deck-schema";
+import type { Deck } from "@/lib/deck-schema";
 import { getDatabasePool } from "@/lib/db";
 import { sha256FromString } from "@/lib/hash";
 import { createSlug } from "@/lib/slug";
+
 import { fetchDeckJson, uploadDeckJson } from "@/lib/storage";
 import { isModerationEnabled } from "@/lib/moderation";
-
-export type DeckStatus = "published" | "pending" | "rejected";
-
-export interface DeckMetadata {
-  id: string;
-  slug: string;
-  title: string;
-  author: string;
-  language: Deck["language"];
-  difficultyMin?: number;
-  difficultyMax?: number;
-  categories: string[];
-  wordClasses: string[];
-  wordCount: number;
-  coverUrl?: string;
-  jsonPath: string;
-  sha256: string;
-  nsfw: boolean;
-  createdAt: string;
-  updatedAt: string;
-  submittedBy?: string | null;
-  description?: string;
-  tags: string[];
-  sampleWords: string[];
-  status: DeckStatus;
-  rejectionReason?: string;
-}
-
-export interface DeckRecord {
-  metadata: DeckMetadata;
-  deck: Deck;
-}
-
-export interface DeckFilters {
-  query?: string;
-  language?: Deck["language"];
-  categories?: string[];
-  tags?: string[];
-  includeNSFW?: boolean;
-  difficultyMin?: number;
-  difficultyMax?: number;
-  page?: number;
-  pageSize?: number;
-  statuses?: DeckStatus[];
-}
-
-export interface DeckSearchResult {
-  items: DeckMetadata[];
-  total: number;
-  page: number;
-  pageSize: number;
-}
-
-export interface DeckSeed {
-  deck: Deck;
-  slug?: string;
-  description?: string;
-  createdAt: string;
-  updatedAt: string;
-  tags?: string[];
-  submittedBy?: string | null;
-  status?: DeckStatus;
-  rejectionReason?: string | null;
-}
-
-export interface DeckFacets {
-  languages: Deck["language"][];
-  categories: string[];
-  tags: string[];
-  difficultyMin?: number;
-  difficultyMax?: number;
-}
+import { buildSearchText, computeDifficultyRange, normalizeDeck } from "./utils";
+import type {
+  DeckFacets,
+  DeckFilters,
+  DeckMetadata,
+  DeckRecord,
+  DeckSearchResult,
+  DeckStatus,
+  DeckStore,
+} from "./types";
 
 interface DeckMetadataRow extends RowDataPacket {
   id: string;
@@ -131,76 +70,6 @@ function parseStringArray(value: unknown): string[] {
   }
 
   return [];
-}
-
-function normalizeDeck(deckInput: Deck): Deck {
-  const base = DeckSchema.parse(deckInput);
-  const words: Deck["words"] = [];
-  const seen = new Set<string>();
-
-  for (const word of base.words) {
-    const text = word.text.trim();
-    if (!text) continue;
-    const key = text.toLowerCase();
-    if (seen.has(key)) continue;
-    seen.add(key);
-    words.push({
-      ...word,
-      text,
-      category: word.category?.trim() || undefined,
-      wordClass: word.wordClass?.trim() || undefined,
-    });
-  }
-
-  const categories = Array.from(
-    new Set((base.metadata.categories ?? []).map((item) => item.trim()).filter(Boolean)),
-  );
-
-  const wordClasses = Array.from(
-    new Set((base.metadata.wordClasses ?? []).map((item) => item.trim()).filter(Boolean)),
-  );
-
-  const normalized: Deck = {
-    ...base,
-    title: base.title.trim(),
-    author: base.author.trim(),
-    allowNSFW: base.allowNSFW ?? false,
-    metadata: {
-      ...base.metadata,
-      categories,
-      wordClasses,
-      coverImage: base.metadata.coverImage,
-    },
-    words,
-  };
-
-  return normalized;
-}
-
-function computeDifficultyRange(words: Deck["words"]) {
-  const difficulties = words
-    .map((word) => word.difficulty)
-    .filter((value): value is number => typeof value === "number");
-
-  if (!difficulties.length) {
-    return { min: undefined, max: undefined };
-  }
-
-  return {
-    min: Math.min(...difficulties),
-    max: Math.max(...difficulties),
-  };
-}
-
-function buildSearchText(metadata: {
-  title: string;
-  author: string;
-  categories: string[];
-  tags: string[];
-}) {
-  return [metadata.title, metadata.author, ...metadata.categories, ...metadata.tags]
-    .map((item) => item.toLowerCase())
-    .join(" ");
 }
 
 function mapRowToMetadata(row: DeckMetadataRow): DeckMetadata {
@@ -512,7 +381,7 @@ async function ensureReady() {
   await initPromise;
 }
 
-export async function listRecentDecks(limit = 6, options: { statuses?: DeckStatus[] } = {}) {
+async function listRecentDecks(limit = 6, options: { statuses?: DeckStatus[] } = {}) {
   await ensureReady();
   const pool = getDatabasePool();
   const statuses = options.statuses?.length ? options.statuses : ["published"];
@@ -533,7 +402,7 @@ export async function listRecentDecks(limit = 6, options: { statuses?: DeckStatu
   return rows.map((row) => mapRowToMetadata(row));
 }
 
-export async function listAllDeckMetadata(options: { statuses?: DeckStatus[] } = {}) {
+async function listAllDeckMetadata(options: { statuses?: DeckStatus[] } = {}) {
   await ensureReady();
   const pool = getDatabasePool();
   const statuses = options.statuses?.length ? options.statuses : ["published"];
@@ -601,7 +470,7 @@ export async function getDeckBySlug(
   }
 }
 
-export async function searchDecks(filters: DeckFilters = {}): Promise<DeckSearchResult> {
+async function searchDecks(filters: DeckFilters = {}): Promise<DeckSearchResult> {
   await ensureReady();
   const pool = getDatabasePool();
   const page = Math.max(1, filters.page ?? 1);
@@ -681,7 +550,7 @@ export async function searchDecks(filters: DeckFilters = {}): Promise<DeckSearch
   };
 }
 
-export async function createDeck(
+async function createDeck(
   deckInput: Deck,
   options: {
     coverUrl?: string;
@@ -828,7 +697,7 @@ export async function createDeck(
   return metadata;
 }
 
-export async function getDeckFacets(): Promise<DeckFacets> {
+async function getDeckFacets(): Promise<DeckFacets> {
   await ensureReady();
   const pool = getDatabasePool();
   const [rows] = await pool.query<RowDataPacket[]>(
@@ -870,7 +739,7 @@ export async function getDeckFacets(): Promise<DeckFacets> {
   };
 }
 
-export async function listDeckSlugs(options: { statuses?: DeckStatus[] } = {}) {
+async function listDeckSlugs(options: { statuses?: DeckStatus[] } = {}) {
   await ensureReady();
   const pool = getDatabasePool();
   const statuses = options.statuses?.length ? options.statuses : ["published"];
@@ -891,7 +760,7 @@ export async function listDeckSlugs(options: { statuses?: DeckStatus[] } = {}) {
   return rows.map((row) => String(row.slug));
 }
 
-export async function updateDeckStatus(
+async function updateDeckStatus(
   slug: string,
   status: DeckStatus,
   options: { rejectionReason?: string | null } = {},
@@ -920,3 +789,28 @@ export async function updateDeckStatus(
 
   return (result as ResultSetHeader).affectedRows > 0;
 }
+
+async function resetForTests() {
+  const pool = getDatabasePool();
+  await ensureSchema();
+  await pool.query("TRUNCATE TABLE decks").catch(async (error) => {
+    if ((error as { code?: string }).code === "ER_NO_SUCH_TABLE") {
+      return;
+    }
+    throw error;
+  });
+  initPromise = null;
+  await ensureReady();
+}
+
+export const dbDeckStore: DeckStore = {
+  listRecentDecks,
+  listAllDeckMetadata,
+  getDeckBySlug,
+  searchDecks,
+  createDeck,
+  getDeckFacets,
+  listDeckSlugs,
+  updateDeckStatus,
+  resetForTests,
+};

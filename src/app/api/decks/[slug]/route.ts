@@ -5,14 +5,16 @@ import { defaultLocale } from "@/i18n/config";
 import { getDeckBySlug } from "@/lib/deck-store";
 import { buildDeckImportUrl, buildDeckJsonUrl } from "@/lib/url";
 
-interface Params {
-  params: { slug: string };
-}
-
-export async function GET(request: NextRequest, { params }: Params) {
-  const session = await auth();
-  const includeUnpublished = Boolean(session?.user?.isAdmin);
-  const record = await getDeckBySlug(params.slug, {
+export async function GET(
+  request: NextRequest,
+  context: { params: Promise<Record<string, string>> },
+) {
+  const { slug } = await context.params;
+  if (!slug) {
+    return NextResponse.json({ message: "Deck not found" }, { status: 404 });
+  }
+  const includeUnpublished = requestHasAdminToken(request.headers);
+  const record = await getDeckBySlug(slug, {
     includeUnpublished,
   });
 
@@ -22,9 +24,9 @@ export async function GET(request: NextRequest, { params }: Params) {
 
   const payload = {
     ...record.metadata,
-    deckUrl: `/${defaultLocale}/decks/${record.metadata.slug}`,
-    jsonUrl: buildDeckJsonUrl(record.metadata.slug),
-    importUrl: buildDeckImportUrl(record.metadata.slug),
+    deckUrl: `/${defaultLocale}/decks/${slug}`,
+    jsonUrl: buildDeckJsonUrl(slug),
+    importUrl: buildDeckImportUrl(slug),
     deck: record.deck,
   };
 
