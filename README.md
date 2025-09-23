@@ -75,6 +75,11 @@ Create a public bucket (for example `alias-decks`) and supply:
 
 The helper uses the Supabase Storage API to upload decks and request a public URL. You can override the generated URL by setting `DECK_STORAGE_PUBLIC_BASE_URL` to a custom domain or CDN edge.
 
+## Abuse protection
+
+- Uploads are rate limited per IP. Configure `DECK_UPLOAD_RATE_LIMIT` (requests) and `DECK_UPLOAD_RATE_WINDOW_SECONDS` (window in seconds) to tune the limits. Provide `REDIS_URL` or host credentials (`REDIS_HOST`, `REDIS_PORT`, `REDIS_USER`, `REDIS_PASSWORD`) to enable distributed enforcement; otherwise a per-instance in-memory counter is used. Set `REDIS_PREFIX` if you need to namespace keys.
+- Set `HCAPTCHA_SECRET_KEY` and `NEXT_PUBLIC_HCAPTCHA_SITE_KEY` to require an hCaptcha challenge on the deck upload form. Leave them unset to disable the CAPTCHA entirely.
+
 ## Moderation
 
 - Configure GitHub OAuth by setting the following environment variables:
@@ -99,14 +104,6 @@ Seed decks live in `src/data/sample-decks.ts`. On first connection the MariaDB s
 
 - `sitemap.xml` lists localized marketing, gallery, upload, and deck detail URLs.
 - `robots.txt` allows crawling and links back to the generated sitemap.
-
-## Next steps
-
-The current implementation focuses on UX and core persistence. To take it production-ready:
-
-1. Add rate limiting and optional CAPTCHA to `/api/decks`.
-2. Connect GitHub OAuth for moderation queues.
-3. Extend translations if new locales are added.
 
 ## Docker
 
