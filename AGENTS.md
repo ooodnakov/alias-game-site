@@ -9,11 +9,11 @@
 - `public/`: static assets. Docker files: `Dockerfile`, `docker-compose.yml` for local DB + app.
 
 ## Build, Test, and Development Commands
-- `npm run dev`: start dev server (http://localhost:3000).
-- `npm run build`: create production build; `npm start`: serve build.
-- `npm run lint`: run ESLint (Next.js + TypeScript rules).
-- `npm test` / `npm run test:watch`: run Vitest unit/integration tests.
-- `npm run test:e2e`: run Playwright e2e; auto-spawns a dev server.
+- `pnpm run dev`: start dev server (http://localhost:3000).
+- `pnpm run build`: create production build; `pnpm start`: serve build.
+- `pnpm run lint`: run ESLint (Next.js + TypeScript rules).
+- `pnpm test` / `pnpm run test:watch`: run Vitest unit/integration tests.
+- `pnpm run test:e2e`: run Playwright e2e; auto-spawns a dev server.
 - Docker: `docker compose up --build` runs MariaDB + web with hot-reload.
 
 ## Coding Style & Naming Conventions
@@ -27,7 +27,7 @@
 ## Testing Guidelines
 - Frameworks: Vitest (`tests/**/*.test.ts`) and Playwright (`tests/e2e/**`).
 - Setup: shared reset in `tests/setup/setup-tests.ts` (deck store state).
-- Run: `npm test` locally; add e2e where flows cross pages.
+- Run: `pnpm test` locally; add e2e where flows cross pages.
 - Coverage: V8 provider enabled; prioritize `src/lib` and API routes.
 
 ## Commit & Pull Request Guidelines
