@@ -25,9 +25,7 @@ const uploadSchema = z.object({
 
 type UploadSchema = z.infer<typeof uploadSchema>;
 
-type HCaptchaInstance = HCaptchaComponent extends { new (...args: unknown[]): infer R }
-  ? R
-  : never;
+type HCaptchaInstance = InstanceType<typeof HCaptchaComponent>;
 
 interface DeckUploadFormProps {
   labels: {

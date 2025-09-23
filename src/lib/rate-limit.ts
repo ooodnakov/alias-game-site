@@ -39,13 +39,26 @@ function createDisabledLimiter(config: RateLimiterConfig): RateLimiter {
 
 function createMemoryLimiter(config: RateLimiterConfig): RateLimiter {
   const buckets = new Map<string, { count: number; reset: number }>();
+  const windowMs = config.window * 1000;
+
+  const interval = setInterval(() => {
+    const now = Date.now();
+    for (const [key, bucket] of buckets.entries()) {
+      if (bucket.reset <= now) {
+        buckets.delete(key);
+      }
+    }
+  }, windowMs);
+
+  if (typeof interval === "object" && interval !== null && "unref" in interval) {
+    (interval as { unref: () => void }).unref();
+  }
 
   return {
     enabled: true,
     async check(identifier: string) {
       const key = config.prefix ? `${config.prefix}:${identifier}` : identifier;
       const now = Date.now();
-      const windowMs = config.window * 1000;
       const bucket = buckets.get(key);
 
       if (!bucket || bucket.reset <= now) {

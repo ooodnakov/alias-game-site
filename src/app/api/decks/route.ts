@@ -24,21 +24,25 @@ function parseNumber(value: string | undefined, fallback: number) {
 }
 
 function getClientIp(request: NextRequest) {
+  if (request.ip) {
+    return request.ip;
+  }
+
   const forwardedFor = request.headers.get("x-forwarded-for");
   if (forwardedFor) {
-    const [first] = forwardedFor.split(",");
-    if (first) {
-      return first.trim();
+    const parts = forwardedFor
+      .split(",")
+      .map((part) => part.trim())
+      .filter((part) => part.length > 0);
+    const last = parts[parts.length - 1];
+    if (last) {
+      return last;
     }
   }
 
   const realIp = request.headers.get("x-real-ip");
   if (realIp) {
     return realIp;
-  }
-
-  if (request.ip) {
-    return request.ip;
   }
 
   return "unknown";
