@@ -4,7 +4,9 @@
     "decks": "Decks",
     "about": "About",
     "upload": "Upload",
-    "download": "Download APK"
+    "download": "Download APK",
+    "menu": "Menu",
+    "closeMenu": "Close menu"
   },
   "footer": {
     "madeWith": "Made with care for parties",
