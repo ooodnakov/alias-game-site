@@ -107,6 +107,8 @@ Seed decks live in `src/data/sample-decks.ts`. On first connection the MariaDB s
 
 ## Docker
 
+### Basic setup (Database only)
+
 A production build together with a MariaDB instance can be started using Docker Compose:
 
 ```bash
@@ -115,3 +117,28 @@ docker compose up --build
 ```
 
 The `web` service waits for the bundled MariaDB container, which exposes its data directory via the `db-data` volume. Update the `.env` or Compose environment variables if you need different credentials or an external database.
+
+### Full setup (Database + MinIO + Valkey)
+
+For a complete self-contained setup with object storage and caching, use the `docker-compose.full.yml` file:
+
+```bash
+# Build the image and start all services: MariaDB, MinIO (S3-compatible storage), Valkey (Redis-compatible cache), and the web app
+docker compose -f docker-compose.full.yml up --build
+```
+
+This setup includes:
+
+- **MariaDB**: Database for deck metadata and user sessions
+- **MinIO**: S3-compatible object storage for deck JSON files (accessible at http://localhost:9000, console at http://localhost:9001)
+- **Valkey**: Redis-compatible cache for rate limiting and session storage
+- **Web app**: The Next.js application with all dependencies
+
+The `.env.example` file is pre-configured to work with this setup. Copy it to `.env` and the application will automatically connect to the local services.
+
+#### Service URLs
+- **Web app**: http://localhost:3000
+- **MinIO API**: http://localhost:9000
+- **MinIO Console**: http://localhost:9001 (login: `minioadmin` / `miniopass`)
+- **MariaDB**: localhost:3306
+- **Valkey**: localhost:6379

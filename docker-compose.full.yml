@@ -1,0 +1,79 @@
+services:
+  db:
+    image: mariadb:11
+    container_name: aliasdb
+    environment:
+      MARIADB_ROOT_PASSWORD: rootpass
+      MARIADB_DATABASE: alias
+      MARIADB_USER: alias
+      MARIADB_PASSWORD: alias
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./db-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  valkey:
+    image: valkey/valkey:8-alpine
+    container_name: aliasvalkey
+    command: valkey-server --save 60 1 --loglevel warning
+    environment:
+      VALKEY_PASSWORD: valkeypass
+    ports:
+      - "6379:6379"
+    volumes:
+      - valkey-data:/data
+    healthcheck:
+      test: ["CMD", "valkey-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  minio:
+    image: minio/minio:latest
+    container_name: aliasminio
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: miniopass
+      MINIO_DEFAULT_BUCKETS: alias-decks
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio-data:/data
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 
+      
+  web:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+      valkey:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    container_name: aliasoss
+    env_file:
+      - .env
+    user: root
+    ports:
+      - "3000:3000"
+    volumes:
+      - .:/app
+      - nextjs_cache:/app/.next
+    command: ["sh", "-c", "echo 'Building from mounted local files' && echo 'DB_HOST='$DB_HOST && ls -la /app && echo 'Waiting for DB' && while ! nc -z db 3306; do sleep 1; done && echo 'DB ready' && chown -R nextjs:nodejs .next && pnpm run build && echo Build complete && pnpm run dev"]
+    restart: unless-stopped
+
+volumes:
+  nextjs_cache:
+  valkey-data:
+  minio-data:
