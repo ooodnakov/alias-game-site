@@ -33,16 +33,12 @@ export default async function LocaleLayout({
   const messages = await getMessages(appLocale);
 
   return (
-    <html lang={appLocale} suppressHydrationWarning>
-      <body className="bg-surface text-foreground antialiased font-sans">
-        <NextIntlClientProvider locale={appLocale} messages={messages} timeZone="UTC">
-          <div className="flex min-h-screen flex-col">
-            <SiteHeader />
-            <main className="flex-1">{children}</main>
-            <SiteFooter />
-          </div>
-        </NextIntlClientProvider>
-      </body>
-    </html>
+    <NextIntlClientProvider locale={appLocale} messages={messages} timeZone="UTC">
+      <div className="flex min-h-screen flex-col">
+        <SiteHeader />
+        <main className="flex-1">{children}</main>
+        <SiteFooter />
+      </div>
+    </NextIntlClientProvider>
   );
 }
