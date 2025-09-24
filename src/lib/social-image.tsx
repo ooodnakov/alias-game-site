@@ -75,7 +75,7 @@ export function renderDeckSocialImage(
   };
 
   const badgeStyle: CSSProperties = {
-    display: "flex",
+    display: "inline-flex",
     alignItems: "center",
     borderRadius: 999,
     padding: "12px 22px",
@@ -87,7 +87,7 @@ export function renderDeckSocialImage(
   };
 
   const tagStyle: CSSProperties = {
-    display: "flex",
+    display: "inline-flex",
     alignItems: "center",
     borderRadius: 999,
     padding: "10px 18px",
@@ -111,7 +111,7 @@ export function renderDeckSocialImage(
         >
           Alias Decks
         </span>
-        <div style={{ marginTop: 24, display: "flex", flexDirection: "column" }}>
+        <div style={{ marginTop: 24 }}>
           <h1
             style={{
               fontSize: metadata ? 72 : 64,
@@ -171,7 +171,7 @@ export function renderDeckSocialImage(
             </div>
           ) : null}
         </div>
-        <div style={{ textAlign: "right", display: "flex", flexDirection: "column" }}>
+        <div style={{ textAlign: "right" }}>
           <p style={{ fontSize: 24, opacity: 0.8, margin: 0 }}>{detailPath}</p>
           <p style={{ fontSize: 22, opacity: 0.6, marginTop: 12 }}>{importPath}</p>
         </div>

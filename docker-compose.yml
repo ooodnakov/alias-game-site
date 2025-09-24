@@ -33,7 +33,7 @@ services:
     volumes:
       - .:/app
       - nextjs_cache:/app/.next
-    command: ["sh", "-c", "echo '🚀 Starting Alias Game Site' && echo '📁 Building from mounted local files' && echo '🔗 DB_HOST='$DB_HOST && ls -la /app && echo '⏳ Waiting for services...' && echo '  - Waiting for DB...' && while ! nc -z db 3306; do sleep 1; done && echo '  ✅ DB connected' && echo '  - Waiting for Redis...' && while ! nc -z valkey 6379; do sleep 1; done && echo '  ✅ Redis connected' && echo '  - Waiting for MinIO...' && while ! curl -f http://minio:9000/minio/health/live > /dev/null 2>&1; do sleep 1; done && echo '  ✅ MinIO connected' && echo '🔧 Setting up permissions...' && chown -R nextjs:nodejs .next && echo '🏗️ Building application...' && pnpm run build && echo '✅ Build complete' && echo '🌐 Starting development server...' && pnpm run dev"]
+    command: ["sh", "-c", "echo 'Building from mounted local files' && echo 'DB_HOST='$DB_HOST && ls -la /app && echo 'Waiting for DB' && while ! nc -z db 3306; do sleep 1; done && echo 'DB ready' && chown -R nextjs:nodejs .next && pnpm run build && echo Build complete && pnpm run dev"]
     restart: unless-stopped
     networks:
       - proxy
