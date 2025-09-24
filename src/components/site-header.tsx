@@ -16,7 +16,9 @@ export async function SiteHeader() {
     { href: "/decks/upload", label: t("upload") },
   ];
 
-  const downloadHref = "https://github.com/ooodnakov/alias-game/releases/latest";
+  const downloadHref =
+    process.env.NEXT_PUBLIC_DOWNLOAD_URL ||
+    "https://github.com/ooodnakov/alias-game/releases/latest";
   const downloadLabel = t("download");
 
   return (
@@ -34,7 +36,7 @@ export async function SiteHeader() {
         </nav>
         <div className="flex items-center gap-2">
           <Button asChild size="sm" className="hidden sm:inline-flex">
-            <Link href={downloadHref} target="_blank" rel="noreferrer">
+            <Link href={downloadHref} target="_blank" rel="noopener noreferrer">
               {downloadLabel}
             </Link>
           </Button>

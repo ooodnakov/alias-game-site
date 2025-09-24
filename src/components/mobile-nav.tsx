@@ -46,7 +46,7 @@ export function MobileNav({
       </Dialog.Trigger>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-40 bg-foreground/20 backdrop-blur-sm" />
-        <Dialog.Content className="fixed inset-y-0 right-0 z-50 flex w-full max-w-xs flex-col bg-surface shadow-lg focus:outline-none">
+        <Dialog.Content className="fixed inset-y-0 right-0 z-50 flex w-full max-w-xs flex-col bg-surface shadow-lg">
           <div className="flex items-center justify-between border-b border-foreground/10 px-6 py-4">
             <Dialog.Title className="text-base font-semibold">
               {menuLabel}
@@ -78,7 +78,7 @@ export function MobileNav({
           <div className="border-t border-foreground/10 px-6 py-4">
             <Dialog.Close asChild>
               <Button asChild className="w-full">
-                <Link href={downloadHref} target="_blank" rel="noreferrer">
+                <Link href={downloadHref} target="_blank" rel="noopener noreferrer">
                   {downloadLabel}
                 </Link>
               </Button>

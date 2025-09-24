@@ -37,7 +37,7 @@ type RootLayoutProps = Readonly<{
 }>;
 
 function isAppLocale(locale: string | null | undefined): locale is AppLocale {
-  return locale != null && locales.includes(locale as AppLocale);
+  return locale != null && locales.some((candidate) => candidate === locale);
 }
 
 export default async function RootLayout({ children }: RootLayoutProps) {
@@ -49,7 +49,7 @@ export default async function RootLayout({ children }: RootLayoutProps) {
       locale = detectedLocale;
     }
   } catch {
-    locale = defaultLocale;
+    // During build, getLocale() can throw. Fallback to defaultLocale is intended.
   }
 
   return (
