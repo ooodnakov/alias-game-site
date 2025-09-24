@@ -1,7 +1,7 @@
 "use client";
 
 import { cva } from "class-variance-authority";
-import type { ReactNode } from "react";
+import { forwardRef, type ReactNode } from "react";
 
 import { useLocale } from "next-intl";
 
@@ -25,35 +25,44 @@ const navLinkStyles = cva(
   },
 );
 
-export function SiteNavLink({
-  href,
-  children,
-}: {
+export type SiteNavLinkProps = {
   href: string;
   children: ReactNode;
-}) {
-  const pathname = usePathname();
-  const locale = useLocale();
+  className?: string;
+  onClick?: () => void;
+};
 
-  let normalizedPath = pathname.startsWith("/") ? pathname : `/${pathname}`;
-  if (normalizedPath === `/${locale}`) {
-    normalizedPath = "/";
-  } else {
-    for (const candidate of locales) {
-      if (normalizedPath.startsWith(`/${candidate}/`)) {
-        normalizedPath = normalizedPath.replace(`/${candidate}`, "");
-        break;
+export const SiteNavLink = forwardRef<HTMLAnchorElement, SiteNavLinkProps>(
+  ({ href, children, className, onClick }, ref) => {
+    const pathname = usePathname();
+    const locale = useLocale();
+
+    let normalizedPath = pathname.startsWith("/") ? pathname : `/${pathname}`;
+    if (normalizedPath === `/${locale}`) {
+      normalizedPath = "/";
+    } else {
+      for (const candidate of locales) {
+        if (normalizedPath.startsWith(`/${candidate}/`)) {
+          normalizedPath = normalizedPath.replace(`/${candidate}`, "");
+          break;
+        }
       }
     }
-  }
 
-  const target = href === "/" ? "/" : href.replace(/\/$/, "");
-  const isActive =
-    normalizedPath === target || normalizedPath.startsWith(`${target}/`);
+    const target = href === "/" ? "/" : href.replace(/\/$/, "");
+    const isActive =
+      normalizedPath === target || normalizedPath.startsWith(`${target}/`);
 
-  return (
-    <Link href={href} className={cn(navLinkStyles({ active: isActive }))}>
-      {children}
-    </Link>
-  );
-}
+    return (
+      <Link
+        ref={ref}
+        href={href}
+        onClick={onClick}
+        className={cn(navLinkStyles({ active: isActive }), className)}
+      >
+        {children}
+      </Link>
+    );
+  });
+
+SiteNavLink.displayName = "SiteNavLink";

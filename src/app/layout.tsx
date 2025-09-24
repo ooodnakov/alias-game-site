@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { getLocale } from "next-intl/server";
 import type { ReactNode } from "react";
 
-import { defaultLocale } from "@/i18n/config";
+import { defaultLocale, locales, type AppLocale } from "@/i18n/config";
 import "./globals.css";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://alias.cards";
@@ -36,16 +36,19 @@ type RootLayoutProps = Readonly<{
   children: ReactNode;
 }>;
 
+function isAppLocale(locale: string | null | undefined): locale is AppLocale {
+  return locale != null && locales.includes(locale as AppLocale);
+}
+
 export default async function RootLayout({ children }: RootLayoutProps) {
-  let locale = defaultLocale;
+  let locale: AppLocale = defaultLocale;
 
   try {
-    locale = await getLocale();
+    const detectedLocale = await getLocale();
+    if (isAppLocale(detectedLocale)) {
+      locale = detectedLocale;
+    }
   } catch {
-    locale = defaultLocale;
-  }
-
-  if (!locale) {
     locale = defaultLocale;
   }
 

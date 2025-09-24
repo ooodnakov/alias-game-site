@@ -4,7 +4,9 @@
     "decks": "Колоды",
     "about": "О проекте",
     "upload": "Загрузка",
-    "download": "Скачать APK"
+    "download": "Скачать APK",
+    "menu": "Меню",
+    "closeMenu": "Закрыть меню"
   },
   "footer": {
     "madeWith": "Сделано с любовью к вечеринкам",
