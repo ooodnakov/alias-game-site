@@ -1,5 +1,3 @@
-# syntax=docker/dockerfile:1.7-labs
-
 FROM node:20-alpine
 WORKDIR /app
 RUN npm install -g pnpm
