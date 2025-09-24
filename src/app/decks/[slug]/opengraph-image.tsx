@@ -1,23 +1,25 @@
 import { ImageResponse } from "next/og";
+import { getLocale } from "next-intl/server";
 
 import { getDeckBySlug } from "@/lib/deck-store";
 import { renderDeckSocialImage } from "@/lib/social-image";
 
 export const runtime = "nodejs";
 export const size = {
-  width: 800,
-  height: 418,
+  width: 1200,
+  height: 630,
 };
 export const contentType = "image/png";
 
-export default async function DeckTwitterImage({
+export default async function DeckOpenGraphImage({
   params,
 }: {
-  params: Promise<{ locale: string; slug: string }>;
+  params: Promise<{ slug: string }>;
 }) {
-  const { locale, slug } = await params;
+  const { slug } = await params;
+  const locale = await getLocale();
   const record = await getDeckBySlug(slug);
-  const detailPath = `/${locale}/decks/${slug}`;
+  const detailPath = `/decks/${slug}`;
 
   return new ImageResponse(
     renderDeckSocialImage(record?.metadata, {

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Link } from "@/i18n/navigation";
-import { getTranslations } from "next-intl/server";
+import { getTranslations, getLocale } from "next-intl/server";
 
 import { DeckCard } from "@/components/deck-card";
 import { DeckFilters } from "@/components/deck-filters";
@@ -13,16 +13,12 @@ interface DeckGalleryPageProps {
   searchParams?: Record<string, string | string[]>;
 }
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}): Promise<Metadata> {
-  const { locale } = await params;
+export async function generateMetadata(): Promise<Metadata> {
+  const locale = await getLocale();
   const t = await getTranslations({ locale, namespace: "meta" });
   const title = t("decks.title");
   const description = t("decks.description");
-  const path = `/${locale}/decks`;
+  const path = "/decks";
 
   return {
     title,
@@ -31,13 +27,13 @@ export async function generateMetadata({
       title,
       description,
       url: path,
-      images: [`/${locale}/opengraph-image`],
+      images: ["/opengraph-image"],
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
-      images: [`/${locale}/twitter-image`],
+      images: ["/twitter-image"],
     },
     alternates: {
       canonical: path,

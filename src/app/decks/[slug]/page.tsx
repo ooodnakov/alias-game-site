@@ -12,13 +12,12 @@ import { buildDeckImportUrl, buildDeckJsonUrl, getBaseUrl } from "@/lib/url";
 import { locales } from "@/i18n/config";
 
 interface DeckDetailPageParams {
-  locale: string;
   slug: string;
 }
 
 export async function generateStaticParams() {
   const slugs = await listDeckSlugs();
-  return locales.flatMap((locale) => slugs.map((slug) => ({ locale, slug })));
+  return slugs.map((slug) => ({ slug }));
 }
 
 export async function generateMetadata({
@@ -26,7 +25,7 @@ export async function generateMetadata({
 }: {
   params: Promise<DeckDetailPageParams>;
 }): Promise<Metadata> {
-  const { locale, slug } = await params;
+  const { slug } = await params;
   const deck = await getDeckBySlug(slug);
 
   if (!deck) {
@@ -34,7 +33,7 @@ export async function generateMetadata({
   }
 
   const jsonUrl = buildDeckJsonUrl(deck.metadata.slug);
-  const detailPath = `/${locale}/decks/${deck.metadata.slug}`;
+  const detailPath = `/decks/${deck.metadata.slug}`;
   const ogImagePath = `${detailPath}/opengraph-image`;
   const twitterImagePath = `${detailPath}/twitter-image`;
   const importUrl = buildDeckImportUrl(deck.metadata.slug);
@@ -61,7 +60,7 @@ export async function generateMetadata({
     alternates: {
       canonical: detailPath,
       languages: Object.fromEntries(
-        locales.map((candidate) => [candidate, `/${candidate}/decks/${deck.metadata.slug}`]),
+        locales.map((candidate) => [candidate, `/decks/${deck.metadata.slug}`]),
       ),
     },
     other: {
@@ -76,7 +75,7 @@ export default async function DeckDetailPage({
 }: {
   params: Promise<DeckDetailPageParams>;
 }) {
-  const { locale, slug } = await params;
+  const { slug } = await params;
   const record = await getDeckBySlug(slug);
   const t = await getTranslations("decks");
 
@@ -86,7 +85,7 @@ export default async function DeckDetailPage({
 
   const jsonUrl = buildDeckJsonUrl(record.metadata.slug);
   const importUrl = buildDeckImportUrl(record.metadata.slug);
-  const detailUrl = `${getBaseUrl()}/${locale}/decks/${record.metadata.slug}`;
+  const detailUrl = `${getBaseUrl()}/decks/${record.metadata.slug}`;
   const additionalProperties: Array<Record<string, unknown>> = [
     {
       "@type": "PropertyValue",

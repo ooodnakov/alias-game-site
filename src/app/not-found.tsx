@@ -3,7 +3,7 @@ import { getTranslations } from "next-intl/server";
 
 import { Button } from "@/components/ui/button";
 
-export default async function LocaleNotFound() {
+export default async function NotFound() {
   const t = await getTranslations("notFound");
 
   return (

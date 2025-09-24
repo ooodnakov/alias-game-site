@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
 import { getLocale } from "next-intl/server";
+import { setRequestLocale } from "next-intl/server";
 import type { ReactNode } from "react";
+import { NextIntlClientProvider } from "next-intl";
 
 import { defaultLocale, locales, type AppLocale } from "@/i18n/config";
+import { getMessages as getMessagesUtil } from "@/i18n/get-messages";
 import "./globals.css";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://alias.cards";
@@ -52,10 +55,16 @@ export default async function RootLayout({ children }: RootLayoutProps) {
     // During build, getLocale() can throw. Fallback to defaultLocale is intended.
   }
 
+  setRequestLocale(locale);
+
+  const messages = await getMessagesUtil(locale);
+
   return (
     <html lang={locale} suppressHydrationWarning>
       <body className="bg-surface text-foreground antialiased font-sans">
-        {children}
+        <NextIntlClientProvider locale={locale} messages={messages} timeZone="UTC">
+          {children}
+        </NextIntlClientProvider>
       </body>
     </html>
   );

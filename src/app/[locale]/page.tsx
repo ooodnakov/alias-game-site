@@ -26,13 +26,13 @@ export async function generateMetadata({
       title,
       description,
       url: path,
-      images: [`${path}/opengraph-image`],
+      images: [`/${locale}/opengraph-image`],
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
-      images: [`${path}/twitter-image`],
+      images: [`/${locale}/twitter-image`],
     },
     alternates: {
       canonical: path,
@@ -140,7 +140,7 @@ export default async function LandingPage() {
               <p className="mt-4 text-lg text-foreground/70">{t("hero.tagline")}</p>
             </div>
             <div className="flex flex-wrap items-center justify-center gap-3 md:justify-start">
-              <Button asChild size="lg">
+              <Button asChild variant="secondary" size="lg">
                 <a
                   href="https://github.com/ooodnakov/alias-game/releases/latest"
                   target="_blank"
