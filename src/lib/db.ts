@@ -2,6 +2,12 @@ import mysql from "mysql2/promise";
 
 let pool: mysql.Pool | null = null;
 
+const NEXT_PHASE_ENV_KEY = "NEXT_PHASE" as const;
+const PRODUCTION_BUILD_PHASE = "phase-production-build" as const;
+
+const env = typeof process !== "undefined" ? process.env : undefined;
+const isProductionBuildPhase = (env?.[NEXT_PHASE_ENV_KEY] ?? null) === PRODUCTION_BUILD_PHASE;
+
 function getEnv(key: string) {
   const value = process.env[key];
   return typeof value === "string" && value.length > 0 ? value : undefined;
@@ -47,6 +53,10 @@ function createPool() {
 }
 
 export function getDatabasePool() {
+  if (isProductionBuildPhase) {
+    throw new Error("Database connections are not allowed during build phase");
+  }
+
   if (!pool) {
     pool = createPool();
   }

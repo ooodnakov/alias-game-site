@@ -91,6 +91,12 @@ function createMemoryLimiter(config: RateLimiterConfig): RateLimiter {
   };
 }
 
+const NEXT_PHASE_ENV_KEY = "NEXT_PHASE" as const;
+const PRODUCTION_BUILD_PHASE = "phase-production-build" as const;
+
+const env = typeof process !== "undefined" ? process.env : undefined;
+const isProductionBuildPhase = (env?.[NEXT_PHASE_ENV_KEY] ?? null) === PRODUCTION_BUILD_PHASE;
+
 export function createRateLimiter(config: RateLimiterConfig): RateLimiter {
   if (!Number.isFinite(config.limit) || config.limit <= 0) {
     return createDisabledLimiter(config);
@@ -98,6 +104,11 @@ export function createRateLimiter(config: RateLimiterConfig): RateLimiter {
 
   if (!Number.isFinite(config.window) || config.window <= 0) {
     return createDisabledLimiter(config);
+  }
+
+  // Use memory store during build to avoid Redis connections
+  if (isProductionBuildPhase) {
+    return createMemoryLimiter(config);
   }
 
   return createRedisLimiter({
