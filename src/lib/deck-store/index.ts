@@ -13,7 +13,8 @@ export type {
   DeckStore,
 } from "./types";
 
-const useMemoryStore = process.env.ALIAS_TEST_DB === "memory";
+const isProductionBuildPhase = process.env.NEXT_PHASE === "phase-production-build";
+const useMemoryStore = process.env.ALIAS_TEST_DB === "memory" || isProductionBuildPhase;
 
 const store: DeckStore = useMemoryStore ? memoryDeckStore : dbDeckStore;
 

@@ -41,6 +41,16 @@ export const authOptions: NextAuthOptions = {
 
 const handler = NextAuth(authOptions);
 
-export const auth = () => getServerSession(authOptions);
+export const auth = async () => {
+  try {
+    return await getServerSession(authOptions);
+  } catch (error) {
+    if (error instanceof Error && error.message.includes("outside a request scope")) {
+      return null;
+    }
+
+    throw error;
+  }
+};
 
 export { handler as GET, handler as POST };
