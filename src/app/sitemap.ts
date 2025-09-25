@@ -2,7 +2,6 @@ export const runtime = "nodejs";
 
 import type { MetadataRoute } from "next";
 
-import { locales } from "@/i18n/config";
 import { listAllDeckMetadata } from "@/lib/deck-store";
 import { getBaseUrl } from "@/lib/url";
 
@@ -11,22 +10,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const decks = await listAllDeckMetadata();
   const generatedAt = new Date();
 
-  const staticEntries = locales.flatMap<MetadataRoute.Sitemap[number]>((locale) => {
-    const prefix = `${baseUrl}/${locale}`;
-    return [
-      { url: prefix, lastModified: generatedAt },
-      { url: `${prefix}/decks`, lastModified: generatedAt },
-      { url: `${prefix}/decks/upload`, lastModified: generatedAt },
-      { url: `${prefix}/about`, lastModified: generatedAt },
-    ];
-  });
+  const staticEntries: MetadataRoute.Sitemap = [
+    { url: baseUrl, lastModified: generatedAt },
+    { url: `${baseUrl}/decks`, lastModified: generatedAt },
+    { url: `${baseUrl}/decks/upload`, lastModified: generatedAt },
+    { url: `${baseUrl}/about`, lastModified: generatedAt },
+  ];
 
-  const deckEntries = locales.flatMap<MetadataRoute.Sitemap[number]>((locale) =>
-    decks.map((deck) => ({
-      url: `${baseUrl}/${locale}/decks/${deck.slug}`,
-      lastModified: new Date(deck.updatedAt),
-    })),
-  );
+  const deckEntries: MetadataRoute.Sitemap = decks.map((deck) => ({
+    url: `${baseUrl}/decks/${deck.slug}`,
+    lastModified: new Date(deck.updatedAt),
+  }));
 
   return [...staticEntries, ...deckEntries];
 }

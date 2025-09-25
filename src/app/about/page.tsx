@@ -2,16 +2,10 @@ import type { Metadata } from "next";
 import { Link } from "@/i18n/navigation";
 import { getTranslations } from "next-intl/server";
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}): Promise<Metadata> {
-  const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: "meta" });
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations({ namespace: "meta" });
   const title = t("about.title");
   const description = t("about.description");
-  const path = `/${locale}/about`;
 
   return {
     title,
@@ -19,17 +13,17 @@ export async function generateMetadata({
     openGraph: {
       title,
       description,
-      url: path,
-      images: [`/${locale}/opengraph-image`],
+      url: "/about",
+      images: ["/opengraph-image"],
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
-      images: [`/${locale}/twitter-image`],
+      images: ["/twitter-image"],
     },
     alternates: {
-      canonical: path,
+      canonical: "/about",
     },
   };
 }

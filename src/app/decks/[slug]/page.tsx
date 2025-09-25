@@ -9,16 +9,14 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { getDeckBySlug, listDeckSlugs } from "@/lib/deck-store";
 import { buildDeckImportUrl, buildDeckJsonUrl, getBaseUrl } from "@/lib/url";
-import { locales } from "@/i18n/config";
 
 interface DeckDetailPageParams {
-  locale: string;
   slug: string;
 }
 
 export async function generateStaticParams() {
   const slugs = await listDeckSlugs();
-  return locales.flatMap((locale) => slugs.map((slug) => ({ locale, slug })));
+  return slugs.map((slug) => ({ slug }));
 }
 
 export async function generateMetadata({
@@ -26,7 +24,7 @@ export async function generateMetadata({
 }: {
   params: Promise<DeckDetailPageParams>;
 }): Promise<Metadata> {
-  const { locale, slug } = await params;
+  const { slug } = await params;
   const deck = await getDeckBySlug(slug);
 
   if (!deck) {
@@ -34,7 +32,7 @@ export async function generateMetadata({
   }
 
   const jsonUrl = buildDeckJsonUrl(deck.metadata.slug);
-  const detailPath = `/${locale}/decks/${deck.metadata.slug}`;
+  const detailPath = `/decks/${deck.metadata.slug}`;
   const ogImagePath = `${detailPath}/opengraph-image`;
   const twitterImagePath = `${detailPath}/twitter-image`;
   const importUrl = buildDeckImportUrl(deck.metadata.slug);
@@ -45,11 +43,7 @@ export async function generateMetadata({
     openGraph: {
       title: deck.metadata.title,
       description: deck.metadata.description ?? deck.metadata.title,
-      images: [
-        deck.metadata.coverUrl
-          ? deck.metadata.coverUrl
-          : ogImagePath,
-      ],
+      images: [deck.metadata.coverUrl ? deck.metadata.coverUrl : ogImagePath],
       url: detailPath,
     },
     twitter: {
@@ -60,9 +54,6 @@ export async function generateMetadata({
     },
     alternates: {
       canonical: detailPath,
-      languages: Object.fromEntries(
-        locales.map((candidate) => [candidate, `/${candidate}/decks/${deck.metadata.slug}`]),
-      ),
     },
     other: {
       "deck-json": jsonUrl,
@@ -76,7 +67,7 @@ export default async function DeckDetailPage({
 }: {
   params: Promise<DeckDetailPageParams>;
 }) {
-  const { locale, slug } = await params;
+  const { slug } = await params;
   const record = await getDeckBySlug(slug);
   const t = await getTranslations("decks");
 
@@ -86,7 +77,7 @@ export default async function DeckDetailPage({
 
   const jsonUrl = buildDeckJsonUrl(record.metadata.slug);
   const importUrl = buildDeckImportUrl(record.metadata.slug);
-  const detailUrl = `${getBaseUrl()}/${locale}/decks/${record.metadata.slug}`;
+  const detailUrl = `${getBaseUrl()}/decks/${record.metadata.slug}`;
   const additionalProperties: Array<Record<string, unknown>> = [
     {
       "@type": "PropertyValue",
@@ -200,70 +191,72 @@ export default async function DeckDetailPage({
             </div>
           </div>
         </div>
-
-        <div className="grid gap-6 md:grid-cols-2">
-          <div className="rounded-3xl border border-border/60 bg-surface p-6 shadow-sm">
-            <h2 className="text-lg font-semibold text-foreground">{t("metadata.categories")}</h2>
-            <ul className="mt-3 flex flex-wrap gap-2 text-xs text-foreground/70">
-              {record.metadata.categories.map((category) => (
-                <li key={category} className="rounded-full bg-muted px-3 py-1">
-                  {category}
-                </li>
-              ))}
-            </ul>
-            {record.metadata.tags.length ? (
-              <>
-                <h3 className="mt-6 text-lg font-semibold text-foreground">
-                  {t("metadata.tags")}
-                </h3>
-                <ul className="mt-3 flex flex-wrap gap-2 text-xs text-foreground/70">
-                  {record.metadata.tags.map((tag) => (
-                    <li key={tag} className="rounded-full bg-muted px-3 py-1">
-                      {tag}
-                    </li>
-                  ))}
-                </ul>
-              </>
-            ) : null}
-            <h3 className="mt-6 text-lg font-semibold text-foreground">
-              {t("metadata.wordClasses")}
-            </h3>
-            <ul className="mt-3 flex flex-wrap gap-2 text-xs text-foreground/70">
-              {record.metadata.wordClasses.map((value) => (
-                <li key={value} className="rounded-full bg-muted px-3 py-1">
-                  {value}
-                </li>
-              ))}
-            </ul>
-            <div className="mt-6 space-y-2 text-xs text-foreground/60">
-              <p>
-                {t("metadata.sha256")}: <span className="font-mono">{record.metadata.sha256}</span>
-              </p>
-              <p>
-                {t("metadata.created")}: {new Date(record.metadata.createdAt).toLocaleDateString()}
-              </p>
-              <p>
-                {t("metadata.updated")}: {new Date(record.metadata.updatedAt).toLocaleDateString()}
-              </p>
-            </div>
+        <div className="grid gap-6 lg:grid-cols-2">
+          <div className="space-y-4 rounded-3xl border border-border/60 bg-surface p-6 shadow-sm">
+            <h2 className="text-xl font-semibold text-foreground">{t("metadata.title")}</h2>
+            <dl className="grid gap-3 text-sm text-foreground/70">
+              <div className="flex justify-between gap-6">
+                <dt className="font-medium text-foreground/80">{t("metadata.language")}</dt>
+                <dd>{record.metadata.language.toUpperCase()}</dd>
+              </div>
+              <div className="flex justify-between gap-6">
+                <dt className="font-medium text-foreground/80">{t("metadata.wordCount")}</dt>
+                <dd>{record.metadata.wordCount.toLocaleString()}</dd>
+              </div>
+              <div className="flex justify-between gap-6">
+                <dt className="font-medium text-foreground/80">{t("metadata.sha256")}</dt>
+                <dd className="break-all font-mono text-xs">{record.metadata.sha256}</dd>
+              </div>
+              <div className="flex justify-between gap-6">
+                <dt className="font-medium text-foreground/80">{t("metadata.created")}</dt>
+                <dd>{new Date(record.metadata.createdAt).toLocaleDateString()}</dd>
+              </div>
+              <div className="flex justify-between gap-6">
+                <dt className="font-medium text-foreground/80">{t("metadata.updated")}</dt>
+                <dd>{new Date(record.metadata.updatedAt).toLocaleDateString()}</dd>
+              </div>
+              {record.metadata.categories.length ? (
+                <div className="flex justify-between gap-6">
+                  <dt className="font-medium text-foreground/80">{t("metadata.categories")}</dt>
+                  <dd className="text-right">
+                    {record.metadata.categories.join(", ")}
+                  </dd>
+                </div>
+              ) : null}
+              {record.metadata.tags.length ? (
+                <div className="flex justify-between gap-6">
+                  <dt className="font-medium text-foreground/80">{t("metadata.tags")}</dt>
+                  <dd className="text-right">
+                    {record.metadata.tags.join(", ")}
+                  </dd>
+                </div>
+              ) : null}
+              {record.metadata.wordClasses?.length ? (
+                <div className="flex justify-between gap-6">
+                  <dt className="font-medium text-foreground/80">{t("metadata.wordClasses")}</dt>
+                  <dd className="text-right">
+                    {record.metadata.wordClasses.join(", ")}
+                  </dd>
+                </div>
+              ) : null}
+            </dl>
           </div>
-          <div className="rounded-3xl border border-border/60 bg-surface p-6 shadow-sm">
-            <h2 className="text-lg font-semibold text-foreground">{t("details.sample")}</h2>
-            <ul className="mt-4 grid grid-cols-2 gap-2 text-sm text-foreground/80">
-              {record.metadata.sampleWords.map((word) => (
-                <li key={word} className="rounded-lg bg-muted px-3 py-2">
+          <div className="space-y-4 rounded-3xl border border-border/60 bg-surface p-6 shadow-sm">
+            <h2 className="text-xl font-semibold text-foreground">{t("details.sample")}</h2>
+            <div className="grid gap-2 text-sm text-foreground/70">
+              {record.words.slice(0, 12).map((word) => (
+                <span key={word} className="rounded-full bg-muted/40 px-4 py-2 text-foreground/80">
                   {word}
-                </li>
+                </span>
               ))}
-            </ul>
-            <div className="mt-6 space-y-2 text-sm text-foreground/80">
-              <h3 className="font-semibold">{t("details.deepLink")}</h3>
-              <code className="block overflow-x-auto rounded-lg bg-muted px-3 py-2 text-xs text-foreground/70">
-                {importUrl}
-              </code>
-              <code className="block overflow-x-auto rounded-lg bg-muted px-3 py-2 text-xs text-foreground/70">
-                {jsonUrl}
-              </code>
+            </div>
+            <div className="space-y-2">
+              <h3 className="text-lg font-semibold text-foreground">{t("details.deepLink")}</h3>
+              <p className="text-sm text-foreground/70">
+                <a href={importUrl} className="text-primary">
+                  {importUrl}
+                </a>
+              </p>
             </div>
           </div>
         </div>

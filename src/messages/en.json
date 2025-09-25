@@ -110,6 +110,7 @@
     "copyJson": "Copy JSON URL",
     "copied": "Copied!",
     "metadata": {
+      "title": "Deck metadata",
       "language": "Language",
       "difficulty": "Difficulty",
       "categories": "Categories",
