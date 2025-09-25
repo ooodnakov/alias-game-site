@@ -211,18 +211,18 @@ export default async function LandingPage() {
       <section className="mx-auto max-w-6xl px-6">
         <h2 className="text-3xl font-semibold text-foreground">{t("screenshots.title")}</h2>
         <div className="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          <div className="space-y-4 rounded-3xl border border-border/60 bg-surface p-6 shadow-sm">
+          <figure className="space-y-4 rounded-3xl border border-border/60 bg-surface p-6 shadow-sm">
             <ScreenMockup variant="game" />
-            <p className="text-sm text-foreground/70">{t("screenshots.captions.game")}</p>
-          </div>
-          <div className="space-y-4 rounded-3xl border border-border/60 bg-surface p-6 shadow-sm">
+            <figcaption className="text-sm text-foreground/70">{t("screenshots.captions.game")}</figcaption>
+          </figure>
+          <figure className="space-y-4 rounded-3xl border border-border/60 bg-surface p-6 shadow-sm">
             <ScreenMockup variant="filters" />
-            <p className="text-sm text-foreground/70">{t("screenshots.captions.filters")}</p>
-          </div>
-          <div className="space-y-4 rounded-3xl border border-border/60 bg-surface p-6 shadow-sm">
+            <figcaption className="text-sm text-foreground/70">{t("screenshots.captions.filters")}</figcaption>
+          </figure>
+          <figure className="space-y-4 rounded-3xl border border-border/60 bg-surface p-6 shadow-sm">
             <ScreenMockup variant="history" />
-            <p className="text-sm text-foreground/70">{t("screenshots.captions.history")}</p>
-          </div>
+            <figcaption className="text-sm text-foreground/70">{t("screenshots.captions.history")}</figcaption>
+          </figure>
         </div>
       </section>
 

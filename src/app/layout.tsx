@@ -2,13 +2,13 @@ export const runtime = "nodejs";
 
 import type { Metadata } from "next";
 import { NextIntlClientProvider } from "next-intl";
-import { getLocale, setRequestLocale } from "next-intl/server";
+import { setRequestLocale } from "next-intl/server";
 import type { ReactNode } from "react";
 
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
-import { defaultLocale, locales, type AppLocale } from "@/i18n/config";
 import { getMessages } from "@/i18n/get-messages";
+import { getSafeLocale } from "@/i18n/get-safe-locale";
 import "./globals.css";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://alias.cards";
@@ -42,21 +42,8 @@ type RootLayoutProps = Readonly<{
   children: ReactNode;
 }>;
 
-function isAppLocale(locale: string | null | undefined): locale is AppLocale {
-  return locale != null && locales.some((candidate) => candidate === locale);
-}
-
 export default async function RootLayout({ children }: RootLayoutProps) {
-  let locale: AppLocale = defaultLocale;
-
-  try {
-    const detectedLocale = await getLocale();
-    if (isAppLocale(detectedLocale)) {
-      locale = detectedLocale;
-    }
-  } catch {
-    // During build, getLocale() can throw. Fallback to defaultLocale is intended.
-  }
+  const locale = await getSafeLocale();
 
   setRequestLocale(locale);
   const messages = await getMessages(locale);
