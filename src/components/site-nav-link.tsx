@@ -3,11 +3,7 @@
 import { cva } from "class-variance-authority";
 import { forwardRef, type ReactNode } from "react";
 
-import { useLocale } from "next-intl";
-
 import { Link, usePathname } from "@/i18n/navigation";
-
-import { locales } from "@/i18n/config";
 import { cn } from "@/lib/cn";
 
 const navLinkStyles = cva(
@@ -35,23 +31,24 @@ export type SiteNavLinkProps = {
 export const SiteNavLink = forwardRef<HTMLAnchorElement, SiteNavLinkProps>(
   ({ href, children, className, onClick }, ref) => {
     const pathname = usePathname();
-    const locale = useLocale();
-
-    let normalizedPath = pathname.startsWith("/") ? pathname : `/${pathname}`;
-    if (normalizedPath === `/${locale}`) {
-      normalizedPath = "/";
-    } else {
-      for (const candidate of locales) {
-        if (normalizedPath.startsWith(`/${candidate}/`)) {
-          normalizedPath = normalizedPath.replace(`/${candidate}`, "");
-          break;
-        }
+    const normalizePath = (value: string) => {
+      if (!value) {
+        return "/";
       }
-    }
 
-    const target = href === "/" ? "/" : href.replace(/\/$/, "");
+      const ensured = value.startsWith("/") ? value : `/${value}`;
+      if (ensured === "/") {
+        return ensured;
+      }
+
+      return ensured.replace(/\/$/, "");
+    };
+
+    const normalizedPath = normalizePath(pathname);
+    const target = normalizePath(href);
     const isActive =
-      normalizedPath === target || normalizedPath.startsWith(`${target}/`);
+      normalizedPath === target ||
+      (target !== "/" && normalizedPath.startsWith(`${target}/`));
 
     return (
       <Link

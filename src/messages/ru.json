@@ -110,6 +110,7 @@
     "copyJson": "Скопировать ссылку",
     "copied": "Скопировано!",
     "metadata": {
+      "title": "Информация о колоде",
       "language": "Язык",
       "difficulty": "Сложность",
       "categories": "Категории",

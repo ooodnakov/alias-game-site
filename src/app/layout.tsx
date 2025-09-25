@@ -1,8 +1,14 @@
+export const runtime = "nodejs";
+
 import type { Metadata } from "next";
-import { getLocale } from "next-intl/server";
+import { NextIntlClientProvider } from "next-intl";
+import { getLocale, setRequestLocale } from "next-intl/server";
 import type { ReactNode } from "react";
 
+import { SiteFooter } from "@/components/site-footer";
+import { SiteHeader } from "@/components/site-header";
 import { defaultLocale, locales, type AppLocale } from "@/i18n/config";
+import { getMessages } from "@/i18n/get-messages";
 import "./globals.css";
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://alias.cards";
@@ -52,10 +58,19 @@ export default async function RootLayout({ children }: RootLayoutProps) {
     // During build, getLocale() can throw. Fallback to defaultLocale is intended.
   }
 
+  setRequestLocale(locale);
+  const messages = await getMessages(locale);
+
   return (
     <html lang={locale} suppressHydrationWarning>
       <body className="bg-surface text-foreground antialiased font-sans">
-        {children}
+        <NextIntlClientProvider locale={locale} messages={messages} timeZone="UTC">
+          <div className="flex min-h-screen flex-col">
+            <SiteHeader />
+            <main className="flex-1">{children}</main>
+            <SiteFooter />
+          </div>
+        </NextIntlClientProvider>
       </body>
     </html>
   );

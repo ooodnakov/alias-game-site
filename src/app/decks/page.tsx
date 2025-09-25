@@ -13,16 +13,10 @@ interface DeckGalleryPageProps {
   searchParams?: Record<string, string | string[]>;
 }
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}): Promise<Metadata> {
-  const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: "meta" });
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations({ namespace: "meta" });
   const title = t("decks.title");
   const description = t("decks.description");
-  const path = `/${locale}/decks`;
 
   return {
     title,
@@ -30,17 +24,17 @@ export async function generateMetadata({
     openGraph: {
       title,
       description,
-      url: path,
-      images: [`/${locale}/opengraph-image`],
+      url: "/decks",
+      images: ["/opengraph-image"],
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
-      images: [`/${locale}/twitter-image`],
+      images: ["/twitter-image"],
     },
     alternates: {
-      canonical: path,
+      canonical: "/decks",
     },
   };
 }
@@ -121,17 +115,17 @@ export default async function DeckGalleryPage({ searchParams = {} }: DeckGallery
           <h1 className="text-3xl font-semibold text-foreground">{t("title")}</h1>
         </div>
         <DeckFilters
-            searchPlaceholder={t("searchPlaceholder")}
-            labels={{
-              language: t("filters.language"),
-              difficultyMin: t("filters.difficultyMin"),
-              difficultyMax: t("filters.difficultyMax"),
-              categories: t("filters.categories"),
-              tags: t("filters.tags"),
-              nsfw: t("filters.nsfw"),
-              apply: t("filters.apply"),
-              reset: t("filters.reset"),
-            }}
+          searchPlaceholder={t("searchPlaceholder")}
+          labels={{
+            language: t("filters.language"),
+            difficultyMin: t("filters.difficultyMin"),
+            difficultyMax: t("filters.difficultyMax"),
+            categories: t("filters.categories"),
+            tags: t("filters.tags"),
+            nsfw: t("filters.nsfw"),
+            apply: t("filters.apply"),
+            reset: t("filters.reset"),
+          }}
           available={{
             languages: facets.languages,
             categories: facets.categories,

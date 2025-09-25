@@ -3,16 +3,10 @@ import { getTranslations } from "next-intl/server";
 
 import { DeckUploadForm } from "@/components/deck-upload-form";
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}): Promise<Metadata> {
-  const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: "meta" });
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations({ namespace: "meta" });
   const title = t("upload.title");
   const description = t("upload.description");
-  const path = `/${locale}/decks/upload`;
 
   return {
     title,
@@ -20,17 +14,17 @@ export async function generateMetadata({
     openGraph: {
       title,
       description,
-      url: path,
-      images: [`/${locale}/opengraph-image`],
+      url: "/decks/upload",
+      images: ["/opengraph-image"],
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
-      images: [`/${locale}/twitter-image`],
+      images: ["/twitter-image"],
     },
     alternates: {
-      canonical: path,
+      canonical: "/decks/upload",
     },
   };
 }

@@ -4,20 +4,13 @@ import { getTranslations } from "next-intl/server";
 import { auth } from "@/auth";
 import { GitHubSignInButton, SignOutButton } from "@/components/auth-buttons";
 import { AdminDeckModeration } from "@/components/admin-deck-moderation";
-import { type AppLocale } from "@/i18n/config";
 
 export const dynamic = "force-dynamic";
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ locale: string }>;
-}): Promise<Metadata> {
-  const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: "meta" });
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations({ namespace: "meta" });
   const title = t("admin.title");
   const description = t("admin.description");
-  const path = `/${locale}/admin/decks`;
 
   return {
     title,
@@ -25,31 +18,26 @@ export async function generateMetadata({
     openGraph: {
       title,
       description,
-      url: path,
-      images: [`/${locale}/opengraph-image`],
+      url: "/admin/decks",
+      images: ["/opengraph-image"],
     },
     twitter: {
       card: "summary_large_image",
       title,
       description,
-      images: [`/${locale}/twitter-image`],
+      images: ["/twitter-image"],
     },
     alternates: {
-      canonical: path,
+      canonical: "/admin/decks",
     },
   };
 }
 
-export default async function AdminDecksPage({
-  params,
-}: {
-  params: Promise<{ locale: AppLocale }>;
-}) {
-  const { locale } = await params;
+export default async function AdminDecksPage() {
   const [t, decksT] = await Promise.all([getTranslations("admin"), getTranslations("decks")]);
   const session = await auth();
   const isAdmin = Boolean(session?.user?.isAdmin);
-  const callbackUrl = `/${locale}/admin/decks`;
+  const callbackUrl = "/admin/decks";
 
   const heading = (
     <div className="space-y-3">
@@ -89,7 +77,7 @@ export default async function AdminDecksPage({
               <p>{t("unauthorized.description", { user: displayName })}</p>
             </div>
             <div className="flex flex-wrap gap-3">
-              <SignOutButton label={t("signOut")} callbackUrl={`/${locale}`} />
+              <SignOutButton label={t("signOut")} callbackUrl="/" />
             </div>
           </div>
         </div>
