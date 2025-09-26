@@ -11,30 +11,30 @@ import { getMessages } from "@/i18n/get-messages";
 import { getSafeLocale } from "@/i18n/get-safe-locale";
 import "./globals.css";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://alias.cards";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://alioss.cards";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "Alias – decks and download",
-    template: "%s | Alias",
+    default: "Alioss – decks and download",
+    template: "%s | Alioss",
   },
   description:
-    "Discover Alias party game decks, upload your own, and download the privacy-first Android app.",
+    "Discover Alioss party game decks, upload your own, and download the privacy-first Android app.",
   openGraph: {
-    title: "Alias – decks and download",
+    title: "Alioss – decks and download",
     description:
-      "Discover Alias party game decks, upload your own, and download the privacy-first Android app.",
+      "Discover Alioss party game decks, upload your own, and download the privacy-first Android app.",
     url: siteUrl,
-    siteName: "Alias",
+    siteName: "Alioss",
     locale: "en_US",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Alias – decks and download",
+    title: "Alioss – decks and download",
     description:
-      "Discover Alias party game decks, upload your own, and download the privacy-first Android app.",
+      "Discover Alioss party game decks, upload your own, and download the privacy-first Android app.",
   },
 };
 

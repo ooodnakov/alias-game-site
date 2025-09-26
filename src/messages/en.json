@@ -16,29 +16,29 @@
   },
   "meta": {
     "landing": {
-      "title": "Alias – community decks & Android download",
-      "description": "Browse curated decks for the Alias word game, import them on Android, and upload your own contributions."
+      "title": "Alioss – community decks & Android download",
+      "description": "Browse curated decks for the Alioss word game, import them on Android, and upload your own contributions."
     },
     "decks": {
-      "title": "Browse Alias decks",
-      "description": "Filter community-made Alias decks by language, difficulty, categories, and tags."
+      "title": "Browse Alioss decks",
+      "description": "Filter community-made Alioss decks by language, difficulty, categories, and tags."
     },
     "upload": {
-      "title": "Upload an Alias deck",
-      "description": "Validate your Alias deck JSON, add an optional cover, and share it with the community."
+      "title": "Upload an Alioss deck",
+      "description": "Validate your Alioss deck JSON, add an optional cover, and share it with the community."
     },
     "about": {
-      "title": "About the Alias project",
-      "description": "Learn how Alias keeps gameplay private, how decks are moderated, and how to contribute."
+      "title": "About the Alioss project",
+      "description": "Learn how Alioss keeps gameplay private, how decks are moderated, and how to contribute."
     },
     "admin": {
       "title": "Moderate community decks",
-      "description": "Review pending Alias deck submissions and publish or reject them."
+      "description": "Review pending Alioss deck submissions and publish or reject them."
     }
   },
   "landing": {
     "hero": {
-      "title": "Alias – the offline party word game",
+      "title": "Alioss – the offline party word game",
       "tagline": "Fast rounds, smart hints, and zero trackers.",
       "download": "Download APK",
       "note": "No telemetry, no ads, works offline.",
@@ -46,7 +46,7 @@
       "browseDecks": "Browse decks"
     },
     "features": {
-      "title": "Why players love Alias",
+      "title": "Why players love Alioss",
       "items": {
         "teams": {
           "title": "2–6 teams",
@@ -106,7 +106,7 @@
     "empty": "No decks matched your filters.",
     "words": "words",
     "nsfw": "NSFW",
-    "import": "Import to Alias",
+    "import": "Import to Alioss",
     "copyJson": "Copy JSON URL",
     "copied": "Copied!",
     "metadata": {
@@ -136,7 +136,7 @@
     "title": "Upload a deck",
     "intro": "Validate your deck JSON and share it with the community.",
     "jsonLabel": "Deck JSON file",
-    "jsonHint": "Upload a JSON file that matches the Alias schema.",
+    "jsonHint": "Upload a JSON file that matches the Alioss schema.",
     "coverLabel": "Cover image URL",
     "coverHint": "Optional HTTPS image that represents your deck.",
     "submit": "Submit deck",
@@ -157,8 +157,8 @@
     }
   },
   "about": {
-    "title": "About Alias",
-    "intro": "Alias is a privacy-first party word game built by Aleksandr Odnakov.",
+    "title": "About Alioss",
+    "intro": "Alioss is a privacy-first party word game built by Aleksandr Odnakov.",
     "values": [
       "Offline-first gameplay. No accounts, no analytics.",
       "Community-driven decks moderated for quality.",

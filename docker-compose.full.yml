@@ -1,12 +1,12 @@
 services:
   db:
     image: mariadb:11
-    container_name: aliasdb
+    container_name: aliossdb
     environment:
       MARIADB_ROOT_PASSWORD: rootpass
-      MARIADB_DATABASE: alias
-      MARIADB_USER: alias
-      MARIADB_PASSWORD: alias
+      MARIADB_DATABASE: alioss
+      MARIADB_USER: alioss
+      MARIADB_PASSWORD: alioss
     ports:
       - "3306:3306"
     volumes:
@@ -19,7 +19,7 @@ services:
 
   valkey:
     image: valkey/valkey:8-alpine
-    container_name: aliasvalkey
+    container_name: aliossvalkey
     command: valkey-server --save 60 1 --loglevel warning
     environment:
       VALKEY_PASSWORD: valkeypass
@@ -35,11 +35,11 @@ services:
 
   minio:
     image: minio/minio:latest
-    container_name: aliasminio
+    container_name: aliossminio
     environment:
       MINIO_ROOT_USER: minioadmin
       MINIO_ROOT_PASSWORD: miniopass
-      MINIO_DEFAULT_BUCKETS: alias-decks
+      MINIO_DEFAULT_BUCKETS: alioss-decks
     ports:
       - "9000:9000"
       - "9001:9001"
@@ -61,7 +61,7 @@ services:
         condition: service_healthy
       minio:
         condition: service_healthy
-    container_name: aliasoss
+    container_name: aliossoss
     env_file:
       - .env
     user: root

@@ -41,7 +41,7 @@ describe("/api/decks", () => {
     expect(payload.items[0]).toMatchObject({
       deckUrl: expect.stringContaining("/decks/"),
       jsonUrl: expect.stringContaining("/decks/"),
-      importUrl: expect.stringContaining("alias://"),
+      importUrl: expect.stringContaining("alioss://"),
     });
   });
 
@@ -58,7 +58,7 @@ describe("/api/decks", () => {
 
     const payload = await response.json();
     expect(payload.slug).toBeDefined();
-    expect(payload.importUrl).toContain("alias://");
+    expect(payload.importUrl).toContain("alioss://");
 
     const searchRequest = new NextRequest(
       `http://localhost/api/decks?q=${encodeURIComponent("Integration Deck")}`,

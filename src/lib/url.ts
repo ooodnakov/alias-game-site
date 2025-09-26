@@ -16,5 +16,5 @@ export function buildDeckJsonUrl(slug: string) {
 
 export function buildDeckImportUrl(slug: string) {
   const jsonUrl = buildDeckJsonUrl(slug);
-  return `alias://import?deck=${encodeURIComponent(jsonUrl)}`;
+  return `alioss://import?deck=${encodeURIComponent(jsonUrl)}`;
 }

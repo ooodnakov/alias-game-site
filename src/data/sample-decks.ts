@@ -12,7 +12,7 @@ export const sampleDeckSeeds: DeckSeed[] = [
   createDeckSeed(
     {
       title: "Party Classics",
-      author: "Alias Team",
+      author: "Alioss Team",
       language: "en",
       allowNSFW: false,
       metadata: {
@@ -45,7 +45,7 @@ export const sampleDeckSeeds: DeckSeed[] = [
     },
     {
       slug: "party-classics",
-      description: "Essential party vocabulary for fast-paced Alias rounds.",
+      description: "Essential party vocabulary for fast-paced Alioss rounds.",
       createdAt: "2024-02-05T10:00:00.000Z",
       updatedAt: "2024-04-01T08:00:00.000Z",
       tags: ["party", "classic"],
@@ -54,7 +54,7 @@ export const sampleDeckSeeds: DeckSeed[] = [
   createDeckSeed(
     {
       title: "Cozy Family Night",
-      author: "Alias Community",
+      author: "Alioss Community",
       language: "en",
       allowNSFW: false,
       metadata: {
@@ -87,7 +87,7 @@ export const sampleDeckSeeds: DeckSeed[] = [
     },
     {
       slug: "cozy-family-night",
-      description: "Gentle prompts for family-friendly Alias sessions.",
+      description: "Gentle prompts for family-friendly Alioss sessions.",
       createdAt: "2024-03-12T15:00:00.000Z",
       updatedAt: "2024-04-11T09:00:00.000Z",
       tags: ["family", "kids"],
@@ -171,7 +171,7 @@ export const sampleDeckSeeds: DeckSeed[] = [
     },
     {
       slug: "late-night-laughs",
-      description: "Cheeky prompts for adults-only Alias sessions after midnight.",
+      description: "Cheeky prompts for adults-only Alioss sessions after midnight.",
       createdAt: "2024-04-05T20:00:00.000Z",
       updatedAt: "2024-04-16T12:00:00.000Z",
       tags: ["party", "humor", "nsfw"],
@@ -180,7 +180,7 @@ export const sampleDeckSeeds: DeckSeed[] = [
   createDeckSeed(
     {
       title: "Русский стартер",
-      author: "Alias Сообщество",
+      author: "Alioss Сообщество",
       language: "ru",
       allowNSFW: false,
       metadata: {
@@ -255,7 +255,7 @@ export const sampleDeckSeeds: DeckSeed[] = [
     },
     {
       slug: "science-jargon-ru",
-      description: "Сложные термины для интеллектуальных сессий Alias.",
+      description: "Сложные термины для интеллектуальных сессий Alioss.",
       createdAt: "2024-04-02T13:00:00.000Z",
       updatedAt: "2024-04-17T11:00:00.000Z",
       tags: ["science", "ru"],
