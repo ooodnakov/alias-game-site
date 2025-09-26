@@ -9,8 +9,10 @@ import { getDeckFacets, searchDecks } from "@/lib/deck-store";
 
 export const revalidate = 300;
 
+type DeckSearchParams = Record<string, string | string[]>;
+
 interface DeckGalleryPageProps {
-  searchParams?: Record<string, string | string[]>;
+  searchParams?: DeckSearchParams | Promise<DeckSearchParams>;
 }
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -39,40 +41,55 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default async function DeckGalleryPage({ searchParams = {} }: DeckGalleryPageProps) {
+export default async function DeckGalleryPage({ searchParams }: DeckGalleryPageProps) {
   const t = await getTranslations("decks");
   const facets = await getDeckFacets();
 
-  const query = typeof searchParams.q === "string" ? searchParams.q : undefined;
-  const language = typeof searchParams.language === "string" ? searchParams.language : undefined;
-  const categoriesParam = Array.isArray(searchParams.categories)
-    ? searchParams.categories.join(",")
-    : searchParams.categories;
+  const resolvedSearchParams = await Promise.resolve(searchParams ?? {});
+
+  const query = typeof resolvedSearchParams.q === "string" ? resolvedSearchParams.q : undefined;
+  const language =
+    typeof resolvedSearchParams.language === "string" ? resolvedSearchParams.language : undefined;
+  const categoriesParam = Array.isArray(resolvedSearchParams.categories)
+    ? resolvedSearchParams.categories.join(",")
+    : resolvedSearchParams.categories;
   const categories = categoriesParam
     ? categoriesParam
         .split(",")
         .map((value) => value.trim())
         .filter(Boolean)
     : [];
-  const tagsParam = Array.isArray(searchParams.tags)
-    ? searchParams.tags.join(",")
-    : searchParams.tags;
+  const tagsParam = Array.isArray(resolvedSearchParams.tags)
+    ? resolvedSearchParams.tags.join(",")
+    : resolvedSearchParams.tags;
   const tags = tagsParam
     ? tagsParam
         .split(",")
         .map((value) => value.trim())
         .filter(Boolean)
     : [];
-  const difficultyMin = searchParams.difficultyMin
-    ? Number(Array.isArray(searchParams.difficultyMin) ? searchParams.difficultyMin[0] : searchParams.difficultyMin)
+  const difficultyMin = resolvedSearchParams.difficultyMin
+    ? Number(
+        Array.isArray(resolvedSearchParams.difficultyMin)
+          ? resolvedSearchParams.difficultyMin[0]
+          : resolvedSearchParams.difficultyMin,
+      )
     : undefined;
-  const difficultyMax = searchParams.difficultyMax
-    ? Number(Array.isArray(searchParams.difficultyMax) ? searchParams.difficultyMax[0] : searchParams.difficultyMax)
+  const difficultyMax = resolvedSearchParams.difficultyMax
+    ? Number(
+        Array.isArray(resolvedSearchParams.difficultyMax)
+          ? resolvedSearchParams.difficultyMax[0]
+          : resolvedSearchParams.difficultyMax,
+      )
     : undefined;
-  const includeNSFW = Array.isArray(searchParams.nsfw)
-    ? searchParams.nsfw.includes("true")
-    : searchParams.nsfw === "true";
-  const page = searchParams.page ? Number(Array.isArray(searchParams.page) ? searchParams.page[0] : searchParams.page) : 1;
+  const includeNSFW = Array.isArray(resolvedSearchParams.nsfw)
+    ? resolvedSearchParams.nsfw.includes("true")
+    : resolvedSearchParams.nsfw === "true";
+  const page = resolvedSearchParams.page
+    ? Number(
+        Array.isArray(resolvedSearchParams.page) ? resolvedSearchParams.page[0] : resolvedSearchParams.page,
+      )
+    : 1;
 
   const result = await searchDecks({
     query,
@@ -89,7 +106,7 @@ export default async function DeckGalleryPage({ searchParams = {} }: DeckGallery
   const totalPages = Math.max(1, Math.ceil(result.total / result.pageSize));
 
   const currentParams = new URLSearchParams();
-  Object.entries(searchParams).forEach(([key, value]) => {
+  Object.entries(resolvedSearchParams).forEach(([key, value]) => {
     if (Array.isArray(value)) {
       value.forEach((item) => currentParams.append(key, item));
     } else if (value !== undefined) {
