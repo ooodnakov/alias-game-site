@@ -47,5 +47,4 @@ networks:
     external: true
     name: proxy
   alioss-site:
-    external: true
     name: alioss-site
