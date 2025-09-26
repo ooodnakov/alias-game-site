@@ -9,7 +9,7 @@ import { listRecentDecks } from "@/lib/deck-store";
 export const revalidate = 300;
 
 export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations({ namespace: "meta" });
+  const t = await getTranslations("meta");
   const title = t("landing.title");
   const description = t("landing.description");
 

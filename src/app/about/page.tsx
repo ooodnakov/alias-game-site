@@ -3,7 +3,7 @@ import { Link } from "@/i18n/navigation";
 import { getTranslations } from "next-intl/server";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations({ namespace: "meta" });
+  const t = await getTranslations("meta");
   const title = t("about.title");
   const description = t("about.description");
 

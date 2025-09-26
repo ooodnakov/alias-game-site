@@ -4,7 +4,7 @@ import { getTranslations } from "next-intl/server";
 import { DeckUploadForm } from "@/components/deck-upload-form";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations({ namespace: "meta" });
+  const t = await getTranslations("meta");
   const title = t("upload.title");
   const description = t("upload.description");
 

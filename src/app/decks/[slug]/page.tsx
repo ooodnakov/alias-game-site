@@ -244,7 +244,7 @@ export default async function DeckDetailPage({
           <div className="space-y-4 rounded-3xl border border-border/60 bg-surface p-6 shadow-sm">
             <h2 className="text-xl font-semibold text-foreground">{t("details.sample")}</h2>
             <div className="grid gap-2 text-sm text-foreground/70">
-              {record.words.slice(0, 12).map((word) => (
+              {record.metadata.sampleWords.slice(0, 12).map((word) => (
                 <span key={word} className="rounded-full bg-muted/40 px-4 py-2 text-foreground/80">
                   {word}
                 </span>

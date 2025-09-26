@@ -14,8 +14,8 @@ export default defineConfig({
     trace: "on-first-retry",
   },
   webServer: {
-    command: "npm run dev -- --hostname 0.0.0.0 --port 3000",
-    url: "http://127.0.0.1:3000",
+    command: "pnpm exec next dev --turbopack --hostname 0.0.0.0 --port 3000",
+    url: "http://127.0.0.1:3000/robots.txt",
     reuseExistingServer: !process.env.CI,
     stdout: "pipe",
     stderr: "pipe",
@@ -23,6 +23,7 @@ export default defineConfig({
       ...process.env,
       ALIAS_TEST_DB: "memory",
       NEXT_PUBLIC_SITE_URL: "http://127.0.0.1:3000",
+      DISABLE_I18N_MIDDLEWARE: "true",
     },
   },
   projects: [
