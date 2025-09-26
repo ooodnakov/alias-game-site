@@ -95,10 +95,22 @@ function expandIpv6(ip: string) {
     return null;
   }
 
-  const head = parts[0] ? parts[0].split(":").filter((segment) => segment.length > 0) : [];
-  const tail = parts.length === 2 && parts[1]
-    ? parts[1].split(":").filter((segment) => segment.length > 0)
-    : [];
+  const headSegments = parts[0].split(":");
+  if (parts[0].length > 0 && headSegments.some((segment) => segment.length === 0)) {
+    return null;
+  }
+  const head = parts[0] ? headSegments : [];
+
+  const tailSegments = parts.length === 2 && parts[1] ? parts[1].split(":") : [];
+  if (
+    parts.length === 2 &&
+    parts[1] &&
+    parts[1].length > 0 &&
+    tailSegments.some((segment) => segment.length === 0)
+  ) {
+    return null;
+  }
+  const tail = parts.length === 2 && parts[1] && parts[1].length > 0 ? tailSegments : [];
 
   if (parts.length === 1) {
     if (head.length !== 8) {
@@ -142,6 +154,22 @@ function isDocumentationIpv6(segments: string[]) {
   return segments[0] === "2001" && segments[1] === "0db8";
 }
 
+function isTeredoIpv6(segments: string[]) {
+  return segments[0] === "2001" && segments[1] === "0000";
+}
+
+function isSixToFourIpv6(segments: string[]) {
+  return segments[0] === "2002";
+}
+
+function isMulticastIpv6(first: number) {
+  return (first & 0xff00) === 0xff00;
+}
+
+function isGlobalUnicast(first: number) {
+  return (first & 0xe000) === 0x2000;
+}
+
 function isReservedIpv6(ip: string) {
   const segments = expandIpv6(ip);
   if (!segments) {
@@ -157,7 +185,18 @@ function isReservedIpv6(ip: string) {
     return true;
   }
 
-  if (isUniqueLocalIpv6(first) || isLinkLocalIpv6(first) || isDocumentationIpv6(segments)) {
+  if (!isGlobalUnicast(first)) {
+    return true;
+  }
+
+  if (
+    isUniqueLocalIpv6(first) ||
+    isLinkLocalIpv6(first) ||
+    isMulticastIpv6(first) ||
+    isDocumentationIpv6(segments) ||
+    isTeredoIpv6(segments) ||
+    isSixToFourIpv6(segments)
+  ) {
     return true;
   }
 
@@ -206,8 +245,9 @@ function normalizeCandidateIp(candidate: string) {
 function getClientIp(request: NextRequest) {
   const candidates: string[] = [];
 
-  if (typeof request.ip === "string" && request.ip.length > 0) {
-    candidates.push(request.ip);
+  const requestIp = (request as NextRequest & { ip?: string | null }).ip;
+  if (typeof requestIp === "string" && requestIp.length > 0) {
+    candidates.push(requestIp);
   }
 
   const forwardedFor = request.headers.get("x-forwarded-for");
