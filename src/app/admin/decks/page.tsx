@@ -8,7 +8,7 @@ import { AdminDeckModeration } from "@/components/admin-deck-moderation";
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations({ namespace: "meta" });
+  const t = await getTranslations("meta");
   const title = t("admin.title");
   const description = t("admin.description");
 

@@ -14,7 +14,7 @@ interface DeckGalleryPageProps {
 }
 
 export async function generateMetadata(): Promise<Metadata> {
-  const t = await getTranslations({ namespace: "meta" });
+  const t = await getTranslations("meta");
   const title = t("decks.title");
   const description = t("decks.description");
 
