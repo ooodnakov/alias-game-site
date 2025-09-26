@@ -1,8 +1,17 @@
 import type { Metadata } from "next";
 
+import { getBaseUrl } from "./url";
+
 type UrlInput = string | URL;
 
-type NullableUrl = UrlInput | null | undefined;
+type AlternateLinkDescriptor = {
+  title?: string;
+  url: UrlInput;
+};
+
+type LinkInput = UrlInput | AlternateLinkDescriptor;
+
+type NullableLinkInput = LinkInput | null | undefined;
 
 function addLocaleToPathname(pathname: string, locale: string): string {
   if (!locale) {
@@ -20,35 +29,55 @@ function addLocaleToPathname(pathname: string, locale: string): string {
   return `/${locale}${pathname.startsWith("/") ? pathname : `/${pathname}`}`;
 }
 
-function localizeUrlValue<T extends UrlInput>(value: T, locale: string): T {
+function localizeUrl<T extends UrlInput>(value: T, locale: string): T {
   if (value instanceof URL) {
     const url = new URL(value.toString());
     url.pathname = addLocaleToPathname(url.pathname, locale);
     return url as T;
   }
 
-  if (value.startsWith("http://") || value.startsWith("https://")) {
-    const url = new URL(value);
-    url.pathname = addLocaleToPathname(url.pathname, locale);
-    return url.toString() as T;
-  }
+  if (typeof value === "string") {
+    if (value.startsWith("http://") || value.startsWith("https://")) {
+      const url = new URL(value);
+      url.pathname = addLocaleToPathname(url.pathname, locale);
+      return url.toString() as T;
+    }
 
-  if (value.startsWith("/")) {
-    const url = new URL(value, "https://example.com");
-    url.pathname = addLocaleToPathname(url.pathname, locale);
-    const localized = `${url.pathname}${url.search}${url.hash}`;
-    return localized as T;
+    if (value.startsWith("/")) {
+      // Use the configured site URL so relative paths resolve consistently across environments.
+      const url = new URL(value, `${getBaseUrl()}/`);
+      url.pathname = addLocaleToPathname(url.pathname, locale);
+      const localized = `${url.pathname}${url.search}${url.hash}`;
+      return localized as T;
+    }
+
+    return value;
   }
 
   return value;
 }
 
-function localizeNullableUrl(value: NullableUrl, locale: string): NullableUrl {
+function isAlternateLinkDescriptor(value: LinkInput): value is AlternateLinkDescriptor {
+  return typeof value === "object" && value !== null && "url" in value;
+}
+
+function localizeLink<T extends LinkInput>(value: T, locale: string): T {
+  if (isAlternateLinkDescriptor(value)) {
+    return {
+      ...value,
+      url: localizeUrl(value.url, locale),
+    } satisfies AlternateLinkDescriptor as T;
+  }
+
+  return localizeUrl(value, locale) as T;
+}
+
+function localizeNullableLink<T extends NullableLinkInput>(value: T, locale: string): T {
   if (value == null) {
     return value;
   }
 
-  return localizeUrlValue(value, locale);
+  return localizeLink(value, locale);
 }
 
 export function localizeMetadata(metadata: Metadata, locale: string): Metadata {
@@ -57,14 +86,16 @@ export function localizeMetadata(metadata: Metadata, locale: string): Metadata {
   if (metadata.alternates?.canonical != null) {
     localized.alternates = {
       ...metadata.alternates,
-      canonical: localizeNullableUrl(metadata.alternates.canonical, locale),
+      canonical: localizeNullableLink(metadata.alternates.canonical, locale),
     };
   }
 
   if (metadata.openGraph?.url != null) {
     localized.openGraph = {
       ...metadata.openGraph,
-      url: localizeNullableUrl(metadata.openGraph.url, locale) ?? undefined,
+      url:
+        (localizeNullableLink(metadata.openGraph.url, locale) as string | URL | null) ??
+        undefined,
     };
   }
 
