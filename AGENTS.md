@@ -1,42 +1,19 @@
 # Repository Guidelines
 
 ## Project Structure & Module Organization
-- `src/app`: Next.js App Router (localized routes under `[locale]`, API under `api/decks`).
-- `src/components` and `src/components/ui`: reusable UI (export components in PascalCase).
-- `src/lib`: deck schema, store, hashing, storage helpers.
-- `src/data`: demo/seed decks; `src/messages` and `src/i18n`: localization.
-- `tests/`: unit, integration, and `e2e/` Playwright specs; `tests/setup` config.
-- `public/`: static assets. Docker files: `Dockerfile`, `docker-compose.yml` for local DB + app.
+Core app code lives under `src/app`, with localized routes in `[locale]` and API handlers in `api/decks`. Shared UI components are in `src/components` and `src/components/ui`, while domain helpers reside in `src/lib` (deck schema, storage, hashing) and sample data in `src/data`. Localization assets sit in `src/messages` and `src/i18n`, and static files go in `public/`. Tests are grouped under `tests/` with Playwright specs in `tests/e2e/` and setup utilities in `tests/setup/`.
 
 ## Build, Test, and Development Commands
-- `pnpm run dev`: start dev server (http://localhost:3000).
-- `pnpm run build`: create production build; `pnpm start`: serve build.
-- `pnpm run lint`: run ESLint (Next.js + TypeScript rules).
-- `pnpm test` / `pnpm run test:watch`: run Vitest unit/integration tests.
-- `pnpm run test:e2e`: run Playwright e2e; auto-spawns a dev server.
-- Docker: `docker compose up --build` runs MariaDB + web with hot-reload.
+Use `pnpm run dev` for the Next.js dev server at http://localhost:3000. Run `pnpm run build` to produce a production bundle and `pnpm start` to serve it. Execute `pnpm run lint` to apply the Next.js + TypeScript ESLint rules. Validate unit and integration coverage with `pnpm test` (or `pnpm run test:watch` locally), and drive Playwright end-to-end checks with `pnpm run test:e2e`.
 
 ## Coding Style & Naming Conventions
-- TypeScript (strict); follow ESLint config (`next/core-web-vitals`, `next/typescript`).
-- Filenames: kebab-case (`deck-upload-form.tsx`, `admin-deck-moderation.tsx`).
-- Component names: PascalCase exports; hooks in camelCase (`useXyz`).
-- Routes/API folders: kebab-case. Use `@/` alias for imports from `src`.
-- Tailwind CSS utilities; keep styles local to components. Prefer Zod for runtime validation.
-- Indentation: 2 spaces; no unused vars/exports; keep modules focused.
+Write strict TypeScript with 2-space indentation and Tailwind utilities scoped to their components. Export components in PascalCase and name hooks in camelCase (`useDeckStore`). Files and routes should stay in kebab-case (`deck-upload-form.tsx`). Prefer `@/` imports for modules under `src`. Use Zod for runtime validation and keep modules focused with no unused exports.
 
 ## Testing Guidelines
-- Frameworks: Vitest (`tests/**/*.test.ts`) and Playwright (`tests/e2e/**`).
-- Setup: shared reset in `tests/setup/setup-tests.ts` (deck store state).
-- Run: `pnpm test` locally; add e2e where flows cross pages.
-- Coverage: V8 provider enabled; prioritize `src/lib` and API routes.
+Vitest powers unit and integration tests (`tests/**/*.test.ts`), while Playwright covers flows across pages. Apply the shared reset helper in `tests/setup/setup-tests.ts` when state is involved. Maintain meaningful describe/it titles to document behavior. Coverage uses the V8 provider—prioritize `src/lib` utilities and API routes before merging.
 
 ## Commit & Pull Request Guidelines
-- Commits: imperative, concise subjects (<72 chars). Optional scope (e.g., "refactor: deck store init"). Reference issues (`#123`) when applicable.
-- PRs: clear summary (what/why), testing steps, screenshots/GIFs for UI, linked issues. Note config/migration changes and update docs or `.env.example` as needed.
-- Keep diffs focused; include tests for bug fixes and new behavior.
+Write imperative commit subjects under 72 characters (e.g., `fix: normalize deck payload`). Reference issues with `#123` when relevant. Pull requests should summarize intent, list testing performed, and include screenshots or GIFs for UI changes. Call out config or migration impacts and update docs or `.env.example` whenever environment requirements shift.
 
 ## Security & Configuration Tips
-- Do not commit secrets. Copy `.env.example` to `.env` and fill required variables (GitHub OAuth, storage S3/R2/Supabase, hCaptcha, Redis, DB).
-- Local DB via `docker-compose.yml`; tests can use in-memory store (`ALIAS_TEST_DB=memory`).
-- Follow README for storage and moderation configuration; prefer CDN/public URLs for deck JSON.
-
+Never commit secrets; start by copying `.env.example` and filling the keys for GitHub OAuth, storage, hCaptcha, Redis, and the DB. Local development can rely on `docker compose up --build` for MariaDB plus the web app. Prefer CDN or public URLs for deck JSON and consult the README for moderation and storage configuration details.
