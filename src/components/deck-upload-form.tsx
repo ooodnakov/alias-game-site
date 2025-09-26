@@ -3,11 +3,14 @@
 import HCaptcha from "@hcaptcha/react-hcaptcha";
 import type { default as HCaptchaComponent } from "@hcaptcha/react-hcaptcha";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRef, useState } from "react";
+import { useRef, useState, type ChangeEvent } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
 import { Button } from "@/components/ui/button";
+import { DeckSchema } from "@/lib/deck-schema";
+
+const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024;
 
 const uploadSchema = z.object({
   file: z.custom<FileList>((value) => {
@@ -44,6 +47,7 @@ interface DeckUploadFormProps {
       required: string;
       invalidJson: string;
       schema: string;
+      tooLarge: string;
     };
     captcha?: {
       label: string;
@@ -53,6 +57,12 @@ interface DeckUploadFormProps {
       captchaRequired: string;
       captchaFailed: string;
       rateLimit: string;
+    };
+    preview: {
+      heading: string;
+      titleLabel: string;
+      wordsLabel: string;
+      invalid: string;
     };
   };
 }
@@ -74,6 +84,10 @@ export function DeckUploadForm({ labels }: DeckUploadFormProps) {
   const [successStatus, setSuccessStatus] = useState<"pending" | "published" | null>(null);
   const [captchaToken, setCaptchaToken] = useState<string | null>(null);
   const [captchaError, setCaptchaError] = useState<string | null>(null);
+  const [preview, setPreview] = useState<{ title: string; wordCount: number } | null>(null);
+  const [previewError, setPreviewError] = useState<string | null>(null);
+  const filePreviewRequestId = useRef(0);
+  const fileInputElementRef = useRef<HTMLInputElement | null>(null);
 
   const resetCaptcha = () => {
     if (captchaRef.current) {
@@ -82,6 +96,72 @@ export function DeckUploadForm({ labels }: DeckUploadFormProps) {
     setCaptchaToken(null);
   };
 
+  const handleFilePreview = (event: ChangeEvent<HTMLInputElement>) => {
+    const fileList = event.target.files;
+    const file = fileList?.item(0) ?? null;
+    setStatus("idle");
+    setErrorMessage(null);
+    setSuccessStatus(null);
+
+    if (!file) {
+      setPreview(null);
+      setPreviewError(null);
+      return;
+    }
+
+    if (file.size > MAX_FILE_SIZE_BYTES) {
+      setPreview(null);
+      setPreviewError(labels.validation.tooLarge);
+      return;
+    }
+
+    const requestId = filePreviewRequestId.current + 1;
+    filePreviewRequestId.current = requestId;
+    setPreview(null);
+    setPreviewError(null);
+
+    void file
+      .text()
+      .then((content) => {
+        if (filePreviewRequestId.current !== requestId) {
+          return;
+        }
+
+        try {
+          const parsed = JSON.parse(content) as unknown;
+          const result = DeckSchema.safeParse(parsed);
+          if (!result.success) {
+            setPreview(null);
+            setPreviewError(labels.preview.invalid);
+            return;
+          }
+
+          setPreview({
+            title: result.data.title,
+            wordCount: result.data.words.length,
+          });
+          setPreviewError(null);
+        } catch {
+          setPreview(null);
+          setPreviewError(labels.preview.invalid);
+        }
+      })
+      .catch(() => {
+        if (filePreviewRequestId.current !== requestId) {
+          return;
+        }
+
+        setPreview(null);
+        setPreviewError(labels.preview.invalid);
+      });
+  };
+
+  const {
+    ref: fileInputRef,
+    onChange: onFileChange,
+    ...fileInputProps
+  } = register("file");
+
   const onSubmit = async (data: UploadSchemaInput) => {
     const parsed: UploadSchema = uploadSchema.parse(data);
     const file = parsed.file.item(0);
@@ -89,6 +169,16 @@ export function DeckUploadForm({ labels }: DeckUploadFormProps) {
       setErrorMessage(labels.validation.required);
       setStatus("error");
       setSuccessStatus(null);
+      return;
+    }
+
+    if (file.size > MAX_FILE_SIZE_BYTES) {
+      const message = labels.validation.tooLarge;
+      setErrorMessage(message);
+      setStatus("error");
+      setSuccessStatus(null);
+      setPreview(null);
+      setPreviewError(message);
       return;
     }
 
@@ -158,6 +248,11 @@ export function DeckUploadForm({ labels }: DeckUploadFormProps) {
       reset();
       setCaptchaError(null);
       resetCaptcha();
+      setPreview(null);
+      setPreviewError(null);
+      if (fileInputElementRef.current) {
+        fileInputElementRef.current.value = "";
+      }
     } catch {
       setStatus("error");
       setErrorMessage(labels.error);
@@ -178,13 +273,37 @@ export function DeckUploadForm({ labels }: DeckUploadFormProps) {
           id="deck-file"
           type="file"
           accept="application/json"
-          {...register("file")}
+          {...fileInputProps}
+          ref={(element) => {
+            fileInputRef(element);
+            fileInputElementRef.current = element;
+          }}
+          onChange={(event) => {
+            onFileChange(event);
+            handleFilePreview(event);
+          }}
           className="rounded-3xl border border-border/60 bg-surface px-4 py-3 text-sm text-foreground shadow-inner"
         />
         <p className="text-xs text-foreground/60">{labels.jsonHint}</p>
         {errors.file ? (
           <p className="text-xs text-rose-600">{labels.validation.required}</p>
         ) : null}
+        {preview ? (
+          <div className="rounded-2xl border border-border/40 bg-surface px-4 py-3 text-xs text-foreground">
+            <p className="font-medium text-sm text-foreground">{labels.preview.heading}</p>
+            <div className="mt-2 space-y-1 text-xs">
+              <p>
+                <span className="text-foreground/60">{labels.preview.titleLabel}: </span>
+                <span className="font-medium text-foreground">{preview.title}</span>
+              </p>
+              <p>
+                <span className="text-foreground/60">{labels.preview.wordsLabel}: </span>
+                <span className="font-medium text-foreground">{preview.wordCount}</span>
+              </p>
+            </div>
+          </div>
+        ) : null}
+        {previewError ? <p className="text-xs text-rose-600">{previewError}</p> : null}
       </div>
       <div className="flex flex-col gap-2 text-sm text-foreground/80">
         <label className="font-medium" htmlFor="cover-url">
