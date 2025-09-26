@@ -8,6 +8,7 @@ import { usePathname, useRouter } from "@/i18n/navigation";
 import { useSearchParams } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
+import { buildPathWithQuery } from "./path-helpers";
 
 interface DeckFiltersProps {
   searchPlaceholder: string;
@@ -104,8 +105,10 @@ export function DeckFilters({ searchPlaceholder, labels, available, initial }: D
 
     params.delete("page");
 
+    const target = buildPathWithQuery(pathname, params);
+
     startTransition(() => {
-      router.replace(`${pathname}?${params.toString()}`);
+      router.replace(target);
     });
   };
 
@@ -126,8 +129,10 @@ export function DeckFilters({ searchPlaceholder, labels, available, initial }: D
     params.delete("tags");
     params.delete("nsfw");
     params.delete("page");
+    const target = buildPathWithQuery(pathname, params);
+
     startTransition(() => {
-      router.replace(`${pathname}?${params.toString()}`);
+      router.replace(target);
     });
   };
 
