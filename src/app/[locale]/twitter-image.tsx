@@ -1,9 +1,10 @@
-
-export { default, size, contentType} from "../twitter-image";
+import localizedTwitterImage, {
+  size as localizedTwitterImageSize,
+  contentType as localizedTwitterImageContentType,
+} from "../twitter-image";
 
 export const runtime = "nodejs";
-export const size = {
-  width: 800,
-  height: 418,
-};
-export const contentType = "image/png";
+export const size = localizedTwitterImageSize;
+export const contentType = localizedTwitterImageContentType;
+
+export default localizedTwitterImage;

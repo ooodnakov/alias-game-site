@@ -1,8 +1,10 @@
-export { default, size, contentType } from "../opengraph-image";
+import localizedOpenGraphImage, {
+  size as localizedOpenGraphImageSize,
+  contentType as localizedOpenGraphImageContentType,
+} from "../opengraph-image";
 
 export const runtime = "nodejs";
-export const size = {
-  width: 1200,
-  height: 630,
-};
-export const contentType = "image/png";
+export const size = localizedOpenGraphImageSize;
+export const contentType = localizedOpenGraphImageContentType;
+
+export default localizedOpenGraphImage;

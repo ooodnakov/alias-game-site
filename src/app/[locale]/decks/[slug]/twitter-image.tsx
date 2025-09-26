@@ -1,8 +1,10 @@
-export { default, size, contentType } from "../../../decks/[slug]/twitter-image";
+import deckTwitterImage, {
+  size as deckTwitterImageSize,
+  contentType as deckTwitterImageContentType,
+} from "../../../decks/[slug]/twitter-image";
 
 export const runtime = "nodejs";
-export const size = {
-  width: 800,
-  height: 418,
-};
-export const contentType = "image/png";
+export const size = deckTwitterImageSize;
+export const contentType = deckTwitterImageContentType;
+
+export default deckTwitterImage;
