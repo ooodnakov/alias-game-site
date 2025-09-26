@@ -9,7 +9,7 @@ jobs:
   build-and-test:
     runs-on: ubuntu-latest
     env:
-      ALIAS_TEST_DB: memory
+      ALIOSS_TEST_DB: memory
       NEXT_TELEMETRY_DISABLED: "1"
     steps:
       - uses: actions/checkout@v4

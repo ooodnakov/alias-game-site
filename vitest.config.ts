@@ -3,7 +3,7 @@ import path from "node:path";
 
 export default defineConfig({
   resolve: {
-    alias: {
+    ALIOSS: {
       "@": path.resolve(__dirname, "src"),
     },
   },
@@ -12,7 +12,7 @@ export default defineConfig({
     globals: true,
     setupFiles: [path.resolve(__dirname, "tests/setup/setup-tests.ts")],
     env: {
-      ALIAS_TEST_DB: "memory",
+      ALIOSS_TEST_DB: "memory",
     },
     coverage: {
       provider: "v8",

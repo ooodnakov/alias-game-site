@@ -50,7 +50,7 @@ export default async function RootLayout({ children }: RootLayoutProps) {
 
   return (
     <html lang={locale} suppressHydrationWarning>
-      <body className="bg-surface text-foreground antialiased font-sans">
+      <body className="bg-surface text-foreground antiALIOSSed font-sans">
         <NextIntlClientProvider locale={locale} messages={messages} timeZone="UTC">
           <div className="flex min-h-screen flex-col">
             <SiteHeader />

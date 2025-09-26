@@ -21,7 +21,7 @@ export default defineConfig({
     stderr: "pipe",
     env: {
       ...process.env,
-      ALIAS_TEST_DB: "memory",
+      ALIOSS_TEST_DB: "memory",
       NEXT_PUBLIC_SITE_URL: "http://127.0.0.1:3000",
       DISABLE_I18N_MIDDLEWARE: "true",
     },

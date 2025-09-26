@@ -61,7 +61,7 @@ services:
         condition: service_healthy
       minio:
         condition: service_healthy
-    container_name: aliossoss
+    container_name: alioss
     env_file:
       - .env
     user: root

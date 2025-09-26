@@ -13,7 +13,7 @@ export type {
   DeckStore,
 } from "./types";
 
-const ALIAS_TEST_DB_ENV_KEY = "ALIAS_TEST_DB" as const;
+const ALIOSS_TEST_DB_ENV_KEY = "ALIOSS_TEST_DB" as const;
 const NEXT_PHASE_ENV_KEY = "NEXT_PHASE" as const;
 const MEMORY_STORE_VALUE = "memory" as const;
 const PRODUCTION_BUILD_PHASE = "phase-production-build" as const;
@@ -25,7 +25,7 @@ const isProductionBuildPhase = (env?.[NEXT_PHASE_ENV_KEY] ?? null) === PRODUCTIO
 // Use a runtime lookup with bracket notation so Next.js doesn't inline the build-time
 // "phase-production-build" value into the compiled bundle (which would otherwise force the
 // memory store at runtime as well).
-const useMemoryStore = (env?.[ALIAS_TEST_DB_ENV_KEY] ?? null) === MEMORY_STORE_VALUE || isProductionBuildPhase;
+const useMemoryStore = (env?.[ALIOSS_TEST_DB_ENV_KEY] ?? null) === MEMORY_STORE_VALUE || isProductionBuildPhase;
 
 const store: DeckStore = useMemoryStore ? memoryDeckStore : dbDeckStore;
 
