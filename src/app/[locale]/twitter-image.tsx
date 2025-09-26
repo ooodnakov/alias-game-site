@@ -1,3 +1,9 @@
+
+export { default, size, contentType} from "../twitter-image";
+
 export const runtime = "nodejs";
-export { size, contentType } from "../twitter-image";
-export { default } from "../twitter-image";
+export const size = {
+  width: 800,
+  height: 418,
+};
+export const contentType = "image/png";
