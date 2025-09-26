@@ -1,4 +1,4 @@
-export { default } from "../../../decks/[slug]/twitter-image";
+export { default, size, contentType } from "../../../decks/[slug]/twitter-image";
 
 export const runtime = "nodejs";
 export const size = {
