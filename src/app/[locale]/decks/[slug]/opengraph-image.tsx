@@ -1,10 +1,9 @@
 import deckOpenGraphImage, {
-  size as deckOpenGraphImageSize,
-  contentType as deckOpenGraphImageContentType,
+  size,
+  contentType,
 } from "../../../decks/[slug]/opengraph-image";
 
 export const runtime = "nodejs";
-export const size = deckOpenGraphImageSize;
-export const contentType = deckOpenGraphImageContentType;
+export { size, contentType };
 
 export default deckOpenGraphImage;

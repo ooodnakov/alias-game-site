@@ -1,10 +1,9 @@
 import localizedOpenGraphImage, {
-  size as localizedOpenGraphImageSize,
-  contentType as localizedOpenGraphImageContentType,
+  size,
+  contentType,
 } from "../opengraph-image";
 
 export const runtime = "nodejs";
-export const size = localizedOpenGraphImageSize;
-export const contentType = localizedOpenGraphImageContentType;
+export { size, contentType };
 
 export default localizedOpenGraphImage;

@@ -1,10 +1,9 @@
 import localizedTwitterImage, {
-  size as localizedTwitterImageSize,
-  contentType as localizedTwitterImageContentType,
+  size,
+  contentType,
 } from "../twitter-image";
 
 export const runtime = "nodejs";
-export const size = localizedTwitterImageSize;
-export const contentType = localizedTwitterImageContentType;
+export { size, contentType };
 
 export default localizedTwitterImage;
