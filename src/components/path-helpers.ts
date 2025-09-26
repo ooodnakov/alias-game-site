@@ -1,4 +1,4 @@
-export function buildDeckFiltersPath(pathname: string, params: URLSearchParams) {
+export function buildPathWithQuery(pathname: string, params: URLSearchParams) {
   const queryString = params.toString();
 
   if (!queryString) {
