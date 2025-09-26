@@ -1,2 +1,2 @@
-export { runtime } from "../sitemap";
+export const runtime = "nodejs";
 export { default } from "../sitemap";
