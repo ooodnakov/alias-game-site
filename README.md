@@ -1,6 +1,6 @@
-# Alias community site
+# Alioss community site
 
-This repository contains the marketing and community portal for the Alias Android party game. It is built with Next.js 15 (App Router) and offers a deck gallery, detail pages with deep links, and an upload workflow for community-made decks.
+This repository contains the marketing and community portal for the Alioss Android party game. It is built with Next.js 15 (App Router) and offers a deck gallery, detail pages with deep links, and an upload workflow for community-made decks.
 
 ## Tech stack
 
@@ -43,7 +43,7 @@ npm run lint      # Run ESLint over the project
 - Deck metadata lives in MariaDB while normalised deck JSON blobs are uploaded to object storage via `src/lib/storage.ts`. The database keeps the returned public URL in the `json_path` column alongside SHA-256 hashes, search text, and moderation state.
 - On startup the store backfills any legacy `deck_json` payloads into object storage before dropping the old column, so upgrading instances automatically migrate existing decks.
 - `/api/decks` provides a JSON API for searching decks and uploading new ones. Uploads validate against the shared Zod schema and compute checksums before persisting the deck.
-- `/decks/[slug].json` now streams each deck directly from the configured bucket/CDN and keeps public caching headers for the Android app import flow (`alias://import?deck=...`).
+- `/decks/[slug].json` now streams each deck directly from the configured bucket/CDN and keeps public caching headers for the Android app import flow (`alioss://import?deck=...`).
 - `/api/decks/validate` performs lightweight schema validation so clients can preflight decks before uploading.
 - If you configure moderator GitHub accounts via `DECK_ADMIN_GITHUB_LOGINS`, uploads from non-admin users start as `pending` and require approval via the moderation UI. Uploads from signed-in admins publish immediately.
 
@@ -52,7 +52,7 @@ npm run lint      # Run ESLint over the project
 The storage helper supports S3-compatible services (AWS S3, Cloudflare R2, MinIO, etc.) and Supabase Storage. Deck JSON files are stored under `<prefix>/<slug>.json`, where the prefix defaults to `decks`. Configure credentials through the following environment variables:
 
 - `DECK_STORAGE_DRIVER`: Set to `s3`, `r2`, or `supabase`.
-- `DECK_STORAGE_BUCKET`: Bucket or container that will hold deck JSON (`alias-decks` is a good default).
+- `DECK_STORAGE_BUCKET`: Bucket or container that will hold deck JSON (`alioss-decks` is a good default).
 - `DECK_STORAGE_PREFIX`: Optional folder/prefix inside the bucket (defaults to `decks`).
 - `DECK_STORAGE_PUBLIC_BASE_URL`: Base URL that exposes the bucket via HTTPS/CDN (for example `https://cdn.example.com`). Required for R2 and recommended for S3/Supabase.
 
@@ -68,7 +68,7 @@ Provide the standard access keys alongside the region. For R2 or other S3-compat
 
 ### Supabase Storage
 
-Create a public bucket (for example `alias-decks`) and supply:
+Create a public bucket (for example `alioss-decks`) and supply:
 
 - `DECK_STORAGE_SUPABASE_URL`
 - `DECK_STORAGE_SUPABASE_SERVICE_ROLE_KEY`

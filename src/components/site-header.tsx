@@ -18,14 +18,14 @@ export async function SiteHeader() {
 
   const downloadHref =
     process.env.NEXT_PUBLIC_DOWNLOAD_URL ||
-    "https://github.com/ooodnakov/alias-game/releases/latest";
+    "https://github.com/ooodnakov/alioss-game/releases/latest";
   const downloadLabel = t("download");
 
   return (
     <header className="border-b border-foreground/10 bg-surface/80 backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3 sm:px-6">
         <Link href="/" className="text-lg font-semibold tracking-tight">
-          Alias
+          Alioss
         </Link>
         <nav className="hidden items-center gap-2 md:flex">
           {links.map((link) => (

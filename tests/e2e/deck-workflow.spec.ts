@@ -41,7 +41,7 @@ test.describe("deck upload flow", () => {
     const matchedDeck = decksPayload?.items?.find((item: { slug?: string }) => item?.slug === deckSlug);
 
     expect(matchedDeck).toBeTruthy();
-    expect(matchedDeck.importUrl).toMatch(/alias:\/\/import/);
+    expect(matchedDeck.importUrl).toMatch(/alioss:\/\/import/);
     expect(matchedDeck.importUrl).toBe(payload.importUrl);
   });
 });

@@ -36,7 +36,7 @@ export function renderDeckSocialImage(
   metadata: DeckMetadata | undefined,
   { locale, width, height, detailPath }: DeckSocialImageOptions,
 ): ReactElement {
-  const palette = pickPalette(metadata?.slug ?? "alias");
+  const palette = pickPalette(metadata?.slug ?? "alioss");
   const background = `linear-gradient(135deg, ${palette[0]}, ${palette[1]})`;
   const accent = palette[2];
   const neutralBadge = hexToRgba("#0f172a", 0.45);
@@ -48,8 +48,8 @@ export function renderDeckSocialImage(
     : null;
 
   const description = metadata
-    ? metadata.description ?? `Community-made Alias deck with ${nf.format(metadata.wordCount)} words.`
-    : "Discover community-made decks for Alias with offline-friendly imports.";
+    ? metadata.description ?? `Community-made Alioss deck with ${nf.format(metadata.wordCount)} words.`
+    : "Discover community-made decks for Alioss with offline-friendly imports.";
 
   const badges = metadata
     ? [
@@ -60,7 +60,7 @@ export function renderDeckSocialImage(
     : ["Community decks", "Offline ready", "No telemetry"];
 
   const tagList = metadata?.tags.slice(0, 4) ?? [];
-  const importPath = metadata ? buildDeckJsonUrl(metadata.slug) : "https://alias-game.app";
+  const importPath = metadata ? buildDeckJsonUrl(metadata.slug) : "https://alioss-game.app";
 
   const containerStyle: CSSProperties = {
     width,
@@ -109,7 +109,7 @@ export function renderDeckSocialImage(
             opacity: 0.75,
           }}
         >
-          Alias Decks
+          Alioss Decks
         </span>
         <div style={{ display: "flex", flexDirection: "column", marginTop: 24 }}>
           <h1
@@ -121,7 +121,7 @@ export function renderDeckSocialImage(
               maxWidth: "90%",
             }}
           >
-            {metadata?.title ?? "Alias community decks"}
+            {metadata?.title ?? "Alioss community decks"}
           </h1>
           <p
             style={{
@@ -158,7 +158,7 @@ export function renderDeckSocialImage(
             </span>
           ) : (
             <span style={{ fontSize: 30, fontWeight: 600, opacity: 0.9 }}>
-              alias-game.app
+              alioss-game.app
             </span>
           )}
           {tagList.length ? (

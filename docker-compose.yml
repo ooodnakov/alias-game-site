@@ -1,12 +1,12 @@
 services:
   db:
     image: mariadb:11
-    container_name: aliasdb
+    container_name: aliossdb
     environment:
       MARIADB_ROOT_PASSWORD: rootpass
-      MARIADB_DATABASE: alias
-      MARIADB_USER: alias
-      MARIADB_PASSWORD: alias
+      MARIADB_DATABASE: alioss
+      MARIADB_USER: alioss
+      MARIADB_PASSWORD: alioss
     ports:
       - "3306:3306"
     volumes:
@@ -17,14 +17,14 @@ services:
       timeout: 5s
       retries: 10
     networks:
-      - alias-site
+      - alioss-site
 
   web:
     build: .
     depends_on:
       db:
         condition: service_healthy
-    container_name: aliasoss
+    container_name: aliossoss
     env_file:
       - .env
     user: root
@@ -37,7 +37,7 @@ services:
     restart: unless-stopped
     networks:
       - proxy
-      - alias-site
+      - alioss-site
 
 volumes:
  nextjs_cache:
@@ -46,6 +46,6 @@ networks:
   proxy:
     external: true
     name: proxy
-  alias-site:
+  alioss-site:
     external: true
-    name: alias-site
+    name: alioss-site

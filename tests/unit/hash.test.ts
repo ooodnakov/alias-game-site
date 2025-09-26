@@ -4,8 +4,8 @@ import { sha256FromString } from "@/lib/hash";
 
 describe("sha256FromString", () => {
   it("returns a deterministic hash", () => {
-    const value = sha256FromString("alias");
-    expect(sha256FromString("alias")).toBe(value);
+    const value = sha256FromString("alioss");
+    expect(sha256FromString("alioss")).toBe(value);
   });
 
   it("produces different hashes for different inputs", () => {

@@ -24,8 +24,8 @@ function createPool() {
     return mysql.createPool({
       host: url.hostname,
       port: Number(url.port || "3306"),
-      user: username ?? getEnv("DB_USER") ?? "alias",
-      password: password ?? getEnv("DB_PASSWORD") ?? "alias",
+      user: username ?? getEnv("DB_USER") ?? "alioss",
+      password: password ?? getEnv("DB_PASSWORD") ?? "alioss",
       database: url.pathname.replace(/^\//, ""),
       waitForConnections: true,
       connectionLimit: Number(getEnv("DB_CONNECTION_LIMIT") ?? "10"),
@@ -35,9 +35,9 @@ function createPool() {
 
   const host = getEnv("DB_HOST") ?? "127.0.0.1";
   const port = Number(getEnv("DB_PORT") ?? "3306");
-  const user = getEnv("DB_USER") ?? "alias";
-  const password = getEnv("DB_PASSWORD") ?? "alias";
-  const database = getEnv("DB_NAME") ?? "alias";
+  const user = getEnv("DB_USER") ?? "alioss";
+  const password = getEnv("DB_PASSWORD") ?? "alioss";
+  const database = getEnv("DB_NAME") ?? "alioss";
   const connectionLimit = Number(getEnv("DB_CONNECTION_LIMIT") ?? "10");
 
   return mysql.createPool({
