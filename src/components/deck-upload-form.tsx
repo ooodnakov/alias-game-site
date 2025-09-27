@@ -13,12 +13,34 @@ import { DeckSchema } from "@/lib/deck-schema";
 const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024;
 
 const uploadSchema = z.object({
-  file: z.custom<FileList>((value) => {
-    if (typeof FileList === "undefined") {
-      return true;
-    }
-    return value instanceof FileList && value.length > 0;
-  }, "required"),
+  file: z
+    .custom<FileList>((value) => {
+      if (typeof FileList === "undefined") {
+        return true;
+      }
+      return value instanceof FileList;
+    }, "required")
+    .superRefine((value, context) => {
+      if (typeof FileList === "undefined") {
+        return;
+      }
+
+      if (!(value instanceof FileList)) {
+        context.addIssue({ code: z.ZodIssueCode.custom, message: "required" });
+        return;
+      }
+
+      const file = value.item(0);
+
+      if (!file) {
+        context.addIssue({ code: z.ZodIssueCode.custom, message: "required" });
+        return;
+      }
+
+      if (file.size > MAX_FILE_SIZE_BYTES) {
+        context.addIssue({ code: z.ZodIssueCode.custom, message: "tooLarge" });
+      }
+    }),
   coverUrl: z
     .string()
     .trim()
@@ -96,7 +118,7 @@ export function DeckUploadForm({ labels }: DeckUploadFormProps) {
     setCaptchaToken(null);
   };
 
-  const handleFilePreview = (event: ChangeEvent<HTMLInputElement>) => {
+  const handleFilePreview = async (event: ChangeEvent<HTMLInputElement>) => {
     const fileList = event.target.files;
     const file = fileList?.item(0) ?? null;
     setStatus("idle");
@@ -120,40 +142,33 @@ export function DeckUploadForm({ labels }: DeckUploadFormProps) {
     setPreview(null);
     setPreviewError(null);
 
-    void file
-      .text()
-      .then((content) => {
-        if (filePreviewRequestId.current !== requestId) {
-          return;
-        }
+    try {
+      const content = await file.text();
 
-        try {
-          const parsed = JSON.parse(content) as unknown;
-          const result = DeckSchema.safeParse(parsed);
-          if (!result.success) {
-            setPreview(null);
-            setPreviewError(labels.preview.invalid);
-            return;
-          }
+      if (filePreviewRequestId.current !== requestId) {
+        return;
+      }
 
-          setPreview({
-            title: result.data.title,
-            wordCount: result.data.words.length,
-          });
-          setPreviewError(null);
-        } catch {
-          setPreview(null);
-          setPreviewError(labels.preview.invalid);
-        }
-      })
-      .catch(() => {
-        if (filePreviewRequestId.current !== requestId) {
-          return;
-        }
+      const parsed = JSON.parse(content) as unknown;
+      const result = DeckSchema.safeParse(parsed);
 
-        setPreview(null);
-        setPreviewError(labels.preview.invalid);
+      if (!result.success) {
+        throw new Error("Invalid deck schema");
+      }
+
+      setPreview({
+        title: result.data.title,
+        wordCount: result.data.words.length,
       });
+      setPreviewError(null);
+    } catch {
+      if (filePreviewRequestId.current !== requestId) {
+        return;
+      }
+
+      setPreview(null);
+      setPreviewError(labels.preview.invalid);
+    }
   };
 
   const {
@@ -169,16 +184,6 @@ export function DeckUploadForm({ labels }: DeckUploadFormProps) {
       setErrorMessage(labels.validation.required);
       setStatus("error");
       setSuccessStatus(null);
-      return;
-    }
-
-    if (file.size > MAX_FILE_SIZE_BYTES) {
-      const message = labels.validation.tooLarge;
-      setErrorMessage(message);
-      setStatus("error");
-      setSuccessStatus(null);
-      setPreview(null);
-      setPreviewError(message);
       return;
     }
 
@@ -280,13 +285,17 @@ export function DeckUploadForm({ labels }: DeckUploadFormProps) {
           }}
           onChange={(event) => {
             onFileChange(event);
-            handleFilePreview(event);
+            void handleFilePreview(event);
           }}
           className="rounded-3xl border border-border/60 bg-surface px-4 py-3 text-sm text-foreground shadow-inner"
         />
         <p className="text-xs text-foreground/60">{labels.jsonHint}</p>
         {errors.file ? (
-          <p className="text-xs text-rose-600">{labels.validation.required}</p>
+          <p className="text-xs text-rose-600">
+            {errors.file.message === "tooLarge"
+              ? labels.validation.tooLarge
+              : labels.validation.required}
+          </p>
         ) : null}
         {preview ? (
           <div className="rounded-2xl border border-border/40 bg-surface px-4 py-3 text-xs text-foreground">
