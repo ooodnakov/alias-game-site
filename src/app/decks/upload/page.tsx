@@ -54,6 +54,7 @@ export default async function DeckUploadPage() {
               required: t("validation.required"),
               invalidJson: t("validation.invalidJson"),
               schema: t("validation.schema"),
+              tooLarge: t("validation.tooLarge"),
             },
             captcha: captchaSiteKey
               ? {
@@ -65,6 +66,12 @@ export default async function DeckUploadPage() {
               captchaRequired: t("serverErrors.captchaRequired"),
               captchaFailed: t("serverErrors.captchaFailed"),
               rateLimit: t("serverErrors.rateLimit"),
+            },
+            preview: {
+              heading: t("preview.heading"),
+              titleLabel: t("preview.titleLabel"),
+              wordsLabel: t("preview.wordsLabel"),
+              invalid: t("preview.invalid"),
             },
           }}
         />
