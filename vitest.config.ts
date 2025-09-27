@@ -3,7 +3,7 @@ import path from "node:path";
 
 export default defineConfig({
   resolve: {
-    ALIOSS: {
+    alias: {
       "@": path.resolve(__dirname, "src"),
     },
   },

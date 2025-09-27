@@ -1,10 +1,24 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+vi.mock("@/lib/captcha", async () => {
+  const actual = await vi.importActual<typeof import("@/lib/captcha")>("@/lib/captcha");
+  return {
+    ...actual,
+    verifyCaptchaToken: vi.fn(actual.verifyCaptchaToken),
+  };
+});
+
 import { GET as decksGet, POST as decksPost } from "@/app/api/decks/route";
 import { __resetDeckStoreForTests } from "@/lib/deck-store";
 import type { Deck } from "@/lib/deck-schema";
 import { NextRequest } from "next/server";
 import * as captcha from "@/lib/captcha";
+
+const FILE_FIELD_NAME = "file";
+const CAPTCHA_TOKEN_FIELD_NAME = "captchaToken";
+const DECK_FILENAME = "deck.json";
+const JSON_CONTENT_TYPE = "application/json";
+const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024;
 
 const createDeckPayload = (overrides: Partial<Deck> = {}): Deck => ({
   title: "Integration Deck",
@@ -28,7 +42,7 @@ describe("/api/decks", () => {
   });
 
   afterEach(() => {
-    vi.restoreAllMocks();
+    vi.clearAllMocks();
     __resetDeckStoreForTests();
   });
 
@@ -52,7 +66,7 @@ describe("/api/decks", () => {
     const request = new NextRequest("http://localhost/api/decks", {
       method: "POST",
       body: JSON.stringify(deck),
-      headers: { "content-type": "application/json" },
+      headers: { "content-type": JSON_CONTENT_TYPE },
     });
 
     const response = await decksPost(request);
@@ -74,11 +88,11 @@ describe("/api/decks", () => {
   it("creates a deck from multipart uploads and returns rate limit headers", async () => {
     const deck = createDeckPayload();
     const formData = new FormData();
-    const file = new File([JSON.stringify(deck)], "deck.json", {
-      type: "application/json",
+    const file = new File([JSON.stringify(deck)], DECK_FILENAME, {
+      type: JSON_CONTENT_TYPE,
     });
-    formData.append("file", file);
-    formData.append("captchaToken", "test-token");
+    formData.append(FILE_FIELD_NAME, file);
+    formData.append(CAPTCHA_TOKEN_FIELD_NAME, "test-token");
 
     const request = new NextRequest("http://localhost/api/decks", {
       method: "POST",
@@ -105,11 +119,11 @@ describe("/api/decks", () => {
   });
 
   it("rejects multipart uploads when the file exceeds the size limit", async () => {
-    const oversizedFile = new File([new Uint8Array(5 * 1024 * 1024 + 1)], "deck.json", {
-      type: "application/json",
+    const oversizedFile = new File([new Uint8Array(MAX_FILE_SIZE_BYTES + 1)], DECK_FILENAME, {
+      type: JSON_CONTENT_TYPE,
     });
     const formData = new FormData();
-    formData.append("file", oversizedFile);
+    formData.append(FILE_FIELD_NAME, oversizedFile);
 
     const request = new NextRequest("http://localhost/api/decks", {
       method: "POST",
@@ -129,13 +143,13 @@ describe("/api/decks", () => {
   it("returns a captcha error when verification fails for multipart uploads", async () => {
     const deck = createDeckPayload();
     const formData = new FormData();
-    const file = new File([JSON.stringify(deck)], "deck.json", {
-      type: "application/json",
+    const file = new File([JSON.stringify(deck)], DECK_FILENAME, {
+      type: JSON_CONTENT_TYPE,
     });
-    formData.append("file", file);
-    formData.append("captchaToken", "invalid-token");
+    formData.append(FILE_FIELD_NAME, file);
+    formData.append(CAPTCHA_TOKEN_FIELD_NAME, "invalid-token");
 
-    vi.spyOn(captcha, "verifyCaptchaToken").mockResolvedValue({
+    vi.mocked(captcha.verifyCaptchaToken).mockResolvedValueOnce({
       success: false,
       error: "missing-token",
     });
@@ -159,7 +173,7 @@ describe("/api/decks", () => {
     const request = new NextRequest("http://localhost/api/decks", {
       method: "POST",
       body: JSON.stringify({ title: "Incomplete" }),
-      headers: { "content-type": "application/json" },
+      headers: { "content-type": JSON_CONTENT_TYPE },
     });
 
     const response = await decksPost(request);
