@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { isIP } from "node:net";
 
 import { auth } from "@/auth";
 import { defaultLocale } from "@/i18n/config";
@@ -23,22 +24,260 @@ function parseNumber(value: string | undefined, fallback: number) {
   return Number.isFinite(parsed) ? parsed : fallback;
 }
 
+const RESERVED_IPV4_RANGES = [
+  ["0.0.0.0", "0.255.255.255"],
+  ["10.0.0.0", "10.255.255.255"],
+  ["100.64.0.0", "100.127.255.255"],
+  ["127.0.0.0", "127.255.255.255"],
+  ["169.254.0.0", "169.254.255.255"],
+  ["172.16.0.0", "172.31.255.255"],
+  ["192.0.0.0", "192.0.0.255"],
+  ["192.0.2.0", "192.0.2.255"],
+  ["192.88.99.0", "192.88.99.255"],
+  ["192.168.0.0", "192.168.255.255"],
+  ["198.18.0.0", "198.19.255.255"],
+  ["198.51.100.0", "198.51.100.255"],
+  ["203.0.113.0", "203.0.113.255"],
+  ["224.0.0.0", "239.255.255.255"],
+  ["240.0.0.0", "255.255.255.254"],
+  ["255.255.255.255", "255.255.255.255"],
+].map(([start, end]) => {
+  return { start: ipv4ToNumber(start), end: ipv4ToNumber(end) };
+});
+
+function ipv4ToNumber(ip: string) {
+  const parts = ip.split(".");
+  if (parts.length !== 4) {
+    return null;
+  }
+
+  let value = 0;
+  for (const part of parts) {
+    if (part.length === 0) {
+      return null;
+    }
+
+    const octet = Number(part);
+    if (!Number.isInteger(octet) || octet < 0 || octet > 255) {
+      return null;
+    }
+
+    value = value * 256 + octet;
+  }
+
+  return value;
+}
+
+function isReservedIpv4(ip: string) {
+  const value = ipv4ToNumber(ip);
+  if (value === null) {
+    return true;
+  }
+
+  return RESERVED_IPV4_RANGES.some((range) => {
+    if (range.start === null || range.end === null) {
+      return false;
+    }
+
+    return value >= range.start && value <= range.end;
+  });
+}
+
+function expandIpv6(ip: string) {
+  let value = ip.toLowerCase();
+  const zoneIndex = value.indexOf("%");
+  if (zoneIndex !== -1) {
+    value = value.slice(0, zoneIndex);
+  }
+
+  const parts = value.split("::");
+  if (parts.length > 2) {
+    return null;
+  }
+
+  const headSegments = parts[0].split(":");
+  if (parts[0].length > 0 && headSegments.some((segment) => segment.length === 0)) {
+    return null;
+  }
+  const head = parts[0] ? headSegments : [];
+
+  const tailSegments = parts.length === 2 && parts[1] ? parts[1].split(":") : [];
+  if (
+    parts.length === 2 &&
+    parts[1] &&
+    parts[1].length > 0 &&
+    tailSegments.some((segment) => segment.length === 0)
+  ) {
+    return null;
+  }
+  const tail = parts.length === 2 && parts[1] && parts[1].length > 0 ? tailSegments : [];
+
+  if (parts.length === 1) {
+    if (head.length !== 8) {
+      return null;
+    }
+
+    return head.map((segment) => segment.padStart(4, "0"));
+  }
+
+  const missing = 8 - (head.length + tail.length);
+  if (missing < 0) {
+    return null;
+  }
+
+  const zeros = Array.from({ length: missing }, () => "0");
+  const segments = [...head, ...zeros, ...tail].map((segment) => segment.padStart(4, "0"));
+  if (segments.length !== 8) {
+    return null;
+  }
+
+  return segments;
+}
+
+function isLoopbackIpv6(segments: string[]) {
+  return segments.slice(0, 7).every((segment) => segment === "0000") && segments[7] === "0001";
+}
+
+function isUnspecifiedIpv6(segments: string[]) {
+  return segments.every((segment) => segment === "0000");
+}
+
+function isUniqueLocalIpv6(first: number) {
+  return (first & 0xfe00) === 0xfc00;
+}
+
+function isLinkLocalIpv6(first: number) {
+  return (first & 0xffc0) === 0xfe80;
+}
+
+function isDocumentationIpv6(segments: string[]) {
+  return segments[0] === "2001" && segments[1] === "0db8";
+}
+
+function isTeredoIpv6(segments: string[]) {
+  return segments[0] === "2001" && segments[1] === "0000";
+}
+
+function isSixToFourIpv6(segments: string[]) {
+  return segments[0] === "2002";
+}
+
+function isMulticastIpv6(first: number) {
+  return (first & 0xff00) === 0xff00;
+}
+
+function isGlobalUnicast(first: number) {
+  return (first & 0xe000) === 0x2000;
+}
+
+function isReservedIpv6(ip: string) {
+  const segments = expandIpv6(ip);
+  if (!segments) {
+    return true;
+  }
+
+  if (isUnspecifiedIpv6(segments) || isLoopbackIpv6(segments)) {
+    return true;
+  }
+
+  const first = Number.parseInt(segments[0], 16);
+  if (!Number.isFinite(first)) {
+    return true;
+  }
+
+  if (!isGlobalUnicast(first)) {
+    return true;
+  }
+
+  if (
+    isUniqueLocalIpv6(first) ||
+    isLinkLocalIpv6(first) ||
+    isMulticastIpv6(first) ||
+    isDocumentationIpv6(segments) ||
+    isTeredoIpv6(segments) ||
+    isSixToFourIpv6(segments)
+  ) {
+    return true;
+  }
+
+  return false;
+}
+
+function normalizeCandidateIp(candidate: string) {
+  let value = candidate.trim();
+  if (value.length === 0) {
+    return null;
+  }
+
+  if (value.startsWith("[")) {
+    const endIndex = value.indexOf("]");
+    if (endIndex !== -1) {
+      value = value.slice(1, endIndex);
+    }
+  }
+
+  const percentIndex = value.indexOf("%");
+  if (percentIndex !== -1) {
+    value = value.slice(0, percentIndex);
+  }
+
+  const ipv4WithPort = value.match(/^(\d{1,3}(?:\.\d{1,3}){3})(?::\d+)?$/u);
+  if (ipv4WithPort) {
+    return ipv4WithPort[1];
+  }
+
+  if (/^\d{1,3}(?:\.\d{1,3}){3}$/u.test(value)) {
+    return value;
+  }
+
+  if (value.toLowerCase().startsWith("::ffff:")) {
+    const mapped = value.slice(7);
+    return normalizeCandidateIp(mapped);
+  }
+
+  if (value.includes(":")) {
+    return value.toLowerCase();
+  }
+
+  return null;
+}
+
 function getClientIp(request: NextRequest) {
+  const candidates: string[] = [];
+
+  const requestIp = (request as NextRequest & { ip?: string | null }).ip;
+  if (typeof requestIp === "string" && requestIp.length > 0) {
+    candidates.push(requestIp);
+  }
+
   const forwardedFor = request.headers.get("x-forwarded-for");
   if (forwardedFor) {
     const parts = forwardedFor
       .split(",")
       .map((part) => part.trim())
       .filter((part) => part.length > 0);
-    const last = parts[parts.length - 1];
-    if (last) {
-      return last;
-    }
+    candidates.push(...parts);
   }
 
   const realIp = request.headers.get("x-real-ip");
   if (realIp) {
-    return realIp;
+    candidates.push(realIp);
+  }
+
+  for (const candidate of candidates) {
+    const normalized = normalizeCandidateIp(candidate);
+    if (!normalized) {
+      continue;
+    }
+
+    const kind = isIP(normalized);
+    if (kind === 4 && !isReservedIpv4(normalized)) {
+      return normalized;
+    }
+
+    if (kind === 6 && !isReservedIpv6(normalized)) {
+      return normalized;
+    }
   }
 
   return "unknown";
