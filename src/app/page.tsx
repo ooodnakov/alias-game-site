@@ -136,7 +136,7 @@ export default async function LandingPage() {
             <div className="flex flex-wrap items-center justify-center gap-3 md:justify-start">
               <Button asChild size="lg">
                 <a
-                  href="https://github.com/ooodnakov/alioss-game/releases/latest"
+                  href="https://github.com/ooodnakov/alioss/releases/latest"
                   target="_blank"
                   rel="noreferrer"
                 >
@@ -148,7 +148,7 @@ export default async function LandingPage() {
               </Button>
               <Button asChild variant="ghost" size="lg">
                 <a
-                  href="https://github.com/ooodnakov/alioss-game"
+                  href="https://github.com/ooodnakov/alioss"
                   target="_blank"
                   rel="noreferrer"
                 >
@@ -234,7 +234,7 @@ export default async function LandingPage() {
           <div className="flex flex-wrap items-center justify-center gap-3 md:justify-end">
             <Button asChild size="lg">
               <a
-                href="https://github.com/ooodnakov/alioss-game/releases/latest"
+                href="https://github.com/ooodnakov/alioss/releases/latest"
                 target="_blank"
                 rel="noreferrer"
               >
@@ -246,7 +246,7 @@ export default async function LandingPage() {
             </Button>
             <Button asChild variant="ghost" size="lg">
               <a
-                href="https://github.com/ooodnakov/alioss-game"
+                href="https://github.com/ooodnakov/alioss"
                 target="_blank"
                 rel="noreferrer"
               >

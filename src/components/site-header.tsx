@@ -18,7 +18,7 @@ export async function SiteHeader() {
 
   const downloadHref =
     process.env.NEXT_PUBLIC_DOWNLOAD_URL ||
-    "https://github.com/ooodnakov/alioss-game/releases/latest";
+    "https://github.com/ooodnakov/alioss/releases/latest";
   const downloadLabel = t("download");
 
   return (

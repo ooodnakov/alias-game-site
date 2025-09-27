@@ -44,7 +44,7 @@ export default async function AboutPage() {
         <p className="text-sm text-foreground/70">
           {t("contact")} {" "}
           <Link
-            href="https://github.com/ooodnakov/alioss-game/issues"
+            href="https://github.com/ooodnakov/alioss/issues"
             target="_blank"
             rel="noreferrer"
             className="text-primary"

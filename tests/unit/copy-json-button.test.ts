@@ -14,8 +14,12 @@ describe("copyJsonToClipboard", () => {
   it("returns false when clipboard access is rejected", async () => {
     const writeText = vi.fn().mockRejectedValue(new Error("denied"));
 
-    // @ts-expect-error navigator is added for test purposes
-    globalThis.navigator = { clipboard: { writeText } };
+    // @ts-expect-error navigator is mocked for test purposes
+    Object.defineProperty(globalThis, 'navigator', {
+      value: { clipboard: { writeText } },
+      configurable: true,
+      writable: true,
+    });
 
     const didCopy = await copyJsonToClipboard(jsonUrl);
 
@@ -32,8 +36,12 @@ describe("copyJsonToClipboard", () => {
   it("writes to the clipboard when available", async () => {
     const writeText = vi.fn().mockResolvedValue(undefined);
 
-    // @ts-expect-error navigator is added for test purposes
-    globalThis.navigator = { clipboard: { writeText } };
+    // @ts-expect-error navigator is mocked for test purposes
+    Object.defineProperty(globalThis, 'navigator', {
+      value: { clipboard: { writeText } },
+      configurable: true,
+      writable: true,
+    });
 
     const didCopy = await copyJsonToClipboard(jsonUrl);
 

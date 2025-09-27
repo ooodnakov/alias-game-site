@@ -60,7 +60,7 @@ export function renderDeckSocialImage(
     : ["Community decks", "Offline ready", "No telemetry"];
 
   const tagList = metadata?.tags.slice(0, 4) ?? [];
-  const importPath = metadata ? buildDeckJsonUrl(metadata.slug) : "https://alioss-game.app";
+  const importPath = metadata ? buildDeckJsonUrl(metadata.slug) : "https://alioss.app";
 
   const containerStyle: CSSProperties = {
     width,
@@ -158,7 +158,7 @@ export function renderDeckSocialImage(
             </span>
           ) : (
             <span style={{ fontSize: 30, fontWeight: 600, opacity: 0.9 }}>
-              alioss-game.app
+              alioss.app
             </span>
           )}
           {tagList.length ? (

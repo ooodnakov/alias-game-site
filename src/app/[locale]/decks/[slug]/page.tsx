@@ -12,7 +12,7 @@ export async function generateMetadata({
 }: {
   params: { locale: string; slug: string };
 }): Promise<Metadata> {
-  const { slug, locale } = params;
+  const { slug, locale } = await params;
   const metadata = await baseGenerateMetadata({
     params: Promise.resolve({ slug }),
   } as Parameters<typeof baseGenerateMetadata>[0]);

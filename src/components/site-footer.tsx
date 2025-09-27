@@ -10,7 +10,7 @@ export async function SiteFooter() {
         <p>{t("madeWith")}</p>
         <div className="flex flex-wrap items-center gap-4">
           <Link
-            href="https://github.com/ooodnakov/alioss-game"
+            href="https://github.com/ooodnakov/alioss"
             target="_blank"
             rel="noreferrer"
             className="transition hover:text-foreground"
@@ -18,7 +18,7 @@ export async function SiteFooter() {
             {t("github")}
           </Link>
           <Link
-            href="https://github.com/ooodnakov/alioss-game/issues"
+            href="https://github.com/ooodnakov/alioss/issues"
             target="_blank"
             rel="noreferrer"
             className="transition hover:text-foreground"

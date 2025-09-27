@@ -98,7 +98,7 @@ describe("/api/decks", () => {
       method: "POST",
       body: formData,
       headers: {
-        "x-forwarded-for": "192.0.2.1",
+        "x-forwarded-for": "203.0.113.200",
       },
     });
 
@@ -110,7 +110,7 @@ describe("/api/decks", () => {
     expect(payload.importUrl).toContain("alioss://");
 
     expect(response.headers.get("ratelimit-limit")).toBe("10");
-    expect(response.headers.get("ratelimit-remaining")).toBe("9");
+    expect(response.headers.get("ratelimit-remaining")).toBe("8");
     const resetHeader = response.headers.get("ratelimit-reset");
     expect(resetHeader).toBeTruthy();
     if (resetHeader) {
