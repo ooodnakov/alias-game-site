@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 
 import type { ResultSetHeader, RowDataPacket } from "mysql2/promise";
+import { revalidateTag, unstable_cache } from "next/cache";
 
 import { sampleDeckSeeds } from "@/data/sample-decks";
 import type { Deck } from "@/lib/deck-schema";
@@ -52,7 +53,55 @@ interface LegacyDeckRow extends RowDataPacket {
   json_path: string | null;
 }
 
+const DECK_FACETS_CACHE_TAG = "deck-facets" as const;
+
 let initPromise: Promise<void> | null = null;
+
+const loadDeckFacets = unstable_cache(
+  async (): Promise<DeckFacets> => {
+    await ensureReady();
+    const pool = getDatabasePool();
+    const [rows] = await pool.query<RowDataPacket[]>(
+      `SELECT language, categories, tags, difficulty_min, difficulty_max FROM decks WHERE status = 'published'`,
+    );
+
+    const languages = new Set<Deck["language"]>();
+    const categories = new Set<string>();
+    const tags = new Set<string>();
+    let minDifficulty: number | undefined;
+    let maxDifficulty: number | undefined;
+
+    for (const row of rows) {
+      if (row.language) {
+        languages.add(row.language as Deck["language"]);
+      }
+      parseStringArray(row.categories).forEach((category) => categories.add(category));
+      parseStringArray(row.tags).forEach((tag) => tags.add(tag));
+      if (typeof row.difficulty_min === "number") {
+        minDifficulty =
+          minDifficulty === undefined ? row.difficulty_min : Math.min(minDifficulty, row.difficulty_min);
+      }
+      if (typeof row.difficulty_max === "number") {
+        maxDifficulty =
+          maxDifficulty === undefined ? row.difficulty_max : Math.max(maxDifficulty, row.difficulty_max);
+      }
+    }
+
+    return {
+      languages: Array.from(languages).sort(),
+      categories: Array.from(categories).sort(),
+      tags: Array.from(tags).sort(),
+      difficultyMin: minDifficulty,
+      difficultyMax: maxDifficulty,
+    };
+  },
+  ["deck-store:getDeckFacets"],
+  { tags: [DECK_FACETS_CACHE_TAG] },
+);
+
+function revalidateDeckFacetsCache() {
+  revalidateTag(DECK_FACETS_CACHE_TAG);
+}
 
 function parseStringArray(value: unknown): string[] {
   if (Array.isArray(value)) {
@@ -693,49 +742,13 @@ async function createDeck(
     },
   );
 
+  revalidateDeckFacetsCache();
+
   return metadata;
 }
 
 async function getDeckFacets(): Promise<DeckFacets> {
-  await ensureReady();
-  const pool = getDatabasePool();
-  const [rows] = await pool.query<RowDataPacket[]>(
-    `SELECT language, categories, tags, difficulty_min, difficulty_max FROM decks WHERE status = 'published'`,
-  );
-
-  const languages = new Set<Deck["language"]>();
-  const categories = new Set<string>();
-  const tags = new Set<string>();
-  let minDifficulty: number | undefined;
-  let maxDifficulty: number | undefined;
-
-  for (const row of rows) {
-    if (row.language) {
-      languages.add(row.language as Deck["language"]);
-    }
-    parseStringArray(row.categories).forEach((category) => categories.add(category));
-    parseStringArray(row.tags).forEach((tag) => tags.add(tag));
-    if (typeof row.difficulty_min === "number") {
-      minDifficulty =
-        minDifficulty === undefined
-          ? row.difficulty_min
-          : Math.min(minDifficulty, row.difficulty_min);
-    }
-    if (typeof row.difficulty_max === "number") {
-      maxDifficulty =
-        maxDifficulty === undefined
-          ? row.difficulty_max
-          : Math.max(maxDifficulty, row.difficulty_max);
-    }
-  }
-
-  return {
-    languages: Array.from(languages).sort(),
-    categories: Array.from(categories).sort(),
-    tags: Array.from(tags).sort(),
-    difficultyMin: minDifficulty,
-    difficultyMax: maxDifficulty,
-  };
+  return loadDeckFacets();
 }
 
 async function listDeckSlugs(options: { statuses?: DeckStatus[] } = {}) {
@@ -786,7 +799,12 @@ async function updateDeckStatus(
     },
   );
 
-  return (result as ResultSetHeader).affectedRows > 0;
+  const updated = (result as ResultSetHeader).affectedRows > 0;
+  if (updated) {
+    revalidateDeckFacetsCache();
+  }
+
+  return updated;
 }
 
 async function resetForTests() {
@@ -800,6 +818,7 @@ async function resetForTests() {
   });
   initPromise = null;
   await ensureReady();
+  revalidateDeckFacetsCache();
 }
 
 export const dbDeckStore: DeckStore = {
