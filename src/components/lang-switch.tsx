@@ -20,6 +20,7 @@ export function LangSwitch() {
       onValueChange={(value) => {
         if (value !== locale) {
           router.replace(pathname, { locale: value as AppLocale });
+          router.refresh();
         }
       }}
     >
