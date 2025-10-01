@@ -252,9 +252,18 @@
       "resources": {
         "heading": "Справочные материалы",
         "items": [
-          "Определение DeckSchema в TypeScript",
-          "Адаптер хранения MariaDB",
-          "Утилиты построения ссылок"
+          {
+            "text": "Определение DeckSchema в TypeScript",
+            "url": "https://github.com/ooodnakov/alioss-site/blob/main/src/lib/deck-schema.ts"
+          },
+          {
+            "text": "Адаптер хранения MariaDB",
+            "url": "https://github.com/ooodnakov/alioss-site/blob/main/src/lib/deck-store/db.ts"
+          },
+          {
+            "text": "Утилиты построения ссылок",
+            "url": "https://github.com/ooodnakov/alioss-site/blob/main/src/lib/url.ts"
+          }
         ]
       }
     }

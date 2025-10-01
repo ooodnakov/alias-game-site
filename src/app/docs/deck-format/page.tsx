@@ -53,21 +53,24 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function DeckFormatDocPage() {
   const t = await getTranslations("docs.deckFormat");
-  const overview = t.raw("sections.overview.body") as string[];
-  const schemas = t.raw("sections.schemas.body") as string[];
-  const mariadb = t.raw("sections.mariadb.body") as string[];
-  const payload = t.raw("sections.payload.body") as string[];
+  const sectionKeys = ["overview", "schemas", "mariadb", "payload"] as const;
+  const sections = sectionKeys.map((key) => {
+    const section = t.raw(`sections.${key}`) as {
+      heading: string;
+      body: string[];
+    };
+
+    return { key, ...section };
+  });
   const checklist = t.raw("sections.validation.items") as string[];
   const rows = t.raw("table.rows") as Record<
     string,
     { mariadb: string; mobile: string; notes: string }
   >;
-  const resources = t.raw("resources.items") as string[];
-  const resourceUrls = [
-    "https://github.com/ooodnakov/alioss-site/blob/main/src/lib/deck-schema.ts",
-    "https://github.com/ooodnakov/alioss-site/blob/main/src/lib/deck-store/db.ts",
-    "https://github.com/ooodnakov/alioss-site/blob/main/src/lib/url.ts",
-  ];
+  const resources = t.raw("resources.items") as Array<{
+    text: string;
+    url: string;
+  }>;
 
   return (
     <div className="bg-surface-muted/40 py-16">
@@ -81,21 +84,15 @@ export default async function DeckFormatDocPage() {
         </header>
 
         <section className="grid gap-6 md:grid-cols-2">
-          {[overview, schemas, mariadb, payload].map((section, index) => (
+          {sections.map((section) => (
             <article
-              key={index}
+              key={section.key}
               className="space-y-3 rounded-3xl border border-border/60 bg-surface p-5 shadow-sm"
             >
               <h2 className="text-lg font-semibold text-foreground">
-                {index === 0
-                  ? t("sections.overview.heading")
-                  : index === 1
-                  ? t("sections.schemas.heading")
-                  : index === 2
-                  ? t("sections.mariadb.heading")
-                  : t("sections.payload.heading")}
+                {section.heading}
               </h2>
-              {section.map((paragraph) => (
+              {section.body.map((paragraph) => (
                 <p key={paragraph} className="text-sm text-foreground/70">
                   {paragraph}
                 </p>
@@ -165,15 +162,15 @@ export default async function DeckFormatDocPage() {
             {t("resources.heading")}
           </h2>
           <ul className="space-y-2 text-sm text-foreground/70">
-            {resources.map((item, index) => (
-              <li key={item}>
+            {resources.map((item) => (
+              <li key={item.text}>
                 <Link
-                  href={resourceUrls[index] ?? "#"}
+                  href={item.url}
                   target="_blank"
                   rel="noreferrer"
                   className="text-primary"
                 >
-                  {item}
+                  {item.text}
                 </Link>
               </li>
             ))}

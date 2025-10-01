@@ -252,9 +252,18 @@
       "resources": {
         "heading": "Further references",
         "items": [
-          "DeckSchema TypeScript definition",
-          "MariaDB storage adapter",
-          "URL builder utilities"
+          {
+            "text": "DeckSchema TypeScript definition",
+            "url": "https://github.com/ooodnakov/alioss-site/blob/main/src/lib/deck-schema.ts"
+          },
+          {
+            "text": "MariaDB storage adapter",
+            "url": "https://github.com/ooodnakov/alioss-site/blob/main/src/lib/deck-store/db.ts"
+          },
+          {
+            "text": "URL builder utilities",
+            "url": "https://github.com/ooodnakov/alioss-site/blob/main/src/lib/url.ts"
+          }
         ]
       }
     }
