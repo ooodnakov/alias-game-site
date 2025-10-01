@@ -1,0 +1,141 @@
+{
+  "title": "Community Kickoff",
+  "author": "Alioss Starter Kit",
+  "language": "en",
+  "allowNSFW": false,
+  "words": [
+    {
+      "text": "Icebreaker",
+      "difficulty": 1,
+      "category": "Party",
+      "wordClass": "NOUN"
+    },
+    {
+      "text": "Celebrate",
+      "difficulty": 1,
+      "category": "Party",
+      "wordClass": "VERB"
+    },
+    {
+      "text": "Host",
+      "difficulty": 1,
+      "category": "Warm-up",
+      "wordClass": "NOUN"
+    },
+    {
+      "text": "Gesture",
+      "difficulty": 2,
+      "category": "Warm-up",
+      "wordClass": "NOUN"
+    },
+    {
+      "text": "Sprint",
+      "difficulty": 2,
+      "category": "Warm-up",
+      "wordClass": "VERB"
+    },
+    {
+      "text": "Guess",
+      "difficulty": 1,
+      "category": "Warm-up",
+      "wordClass": "VERB"
+    },
+    {
+      "text": "Cheer",
+      "difficulty": 1,
+      "category": "Party",
+      "wordClass": "VERB"
+    },
+    {
+      "text": "Scoreboard",
+      "difficulty": 2,
+      "category": "Warm-up",
+      "wordClass": "NOUN"
+    },
+    {
+      "text": "Victory",
+      "difficulty": 2,
+      "category": "Party",
+      "wordClass": "NOUN"
+    },
+    {
+      "text": "Rematch",
+      "difficulty": 2,
+      "category": "Party",
+      "wordClass": "NOUN"
+    },
+    {
+      "text": "Challenge",
+      "difficulty": 2,
+      "category": "Warm-up",
+      "wordClass": "NOUN"
+    },
+    {
+      "text": "Banter",
+      "difficulty": 2,
+      "category": "Party",
+      "wordClass": "NOUN"
+    },
+    {
+      "text": "Whisper",
+      "difficulty": 1,
+      "category": "Warm-up",
+      "wordClass": "VERB"
+    },
+    {
+      "text": "Timer",
+      "difficulty": 1,
+      "category": "Warm-up",
+      "wordClass": "NOUN"
+    },
+    {
+      "text": "Prompt",
+      "difficulty": 1,
+      "category": "Warm-up",
+      "wordClass": "NOUN"
+    },
+    {
+      "text": "Clue",
+      "difficulty": 1,
+      "category": "Warm-up",
+      "wordClass": "NOUN"
+    },
+    {
+      "text": "Spotlight",
+      "difficulty": 1,
+      "category": "Party",
+      "wordClass": "NOUN"
+    },
+    {
+      "text": "Encore",
+      "difficulty": 2,
+      "category": "Party",
+      "wordClass": "NOUN"
+    },
+    {
+      "text": "Laugh",
+      "difficulty": 1,
+      "category": "Party",
+      "wordClass": "VERB"
+    },
+    {
+      "text": "Victory dance",
+      "difficulty": 2,
+      "category": "Party",
+      "wordClass": "NOUN"
+    }
+  ],
+  "metadata": {
+    "categories": [
+      "Party",
+      "Warm-up"
+    ],
+    "wordClasses": [
+      "NOUN",
+      "VERB",
+      "ADJ"
+    ],
+    "coverImage": "https://alioss.app/starter-kit/cover-template-dark.svg",
+    "version": "2024.11"
+  }
+}
