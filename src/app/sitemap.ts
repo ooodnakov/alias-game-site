@@ -14,6 +14,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: baseUrl, lastModified: generatedAt },
     { url: `${baseUrl}/decks`, lastModified: generatedAt },
     { url: `${baseUrl}/decks/upload`, lastModified: generatedAt },
+    { url: `${baseUrl}/updates`, lastModified: generatedAt },
     { url: `${baseUrl}/about`, lastModified: generatedAt },
   ];
 

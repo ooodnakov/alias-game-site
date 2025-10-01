@@ -2,6 +2,40 @@ import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 
 import { DeckUploadForm } from "@/components/deck-upload-form";
+import { Button } from "@/components/ui/button";
+
+type StarterKitLink = {
+  label: string;
+  href: string;
+  external?: boolean;
+  download?: boolean;
+};
+
+type StarterKitResource = {
+  id: string;
+  title: string;
+  description: string;
+  links?: StarterKitLink[];
+};
+
+type StarterKitTutorial = {
+  id: string;
+  title: string;
+  summary: string;
+  href: string;
+};
+
+type StarterKitContent = {
+  title?: string;
+  description?: string;
+  resources?: StarterKitResource[];
+  tutorials?: {
+    title?: string;
+    description?: string;
+    linkLabel?: string;
+    items?: StarterKitTutorial[];
+  };
+};
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("meta");
@@ -32,6 +66,10 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function DeckUploadPage() {
   const t = await getTranslations("upload");
   const captchaSiteKey = process.env.NEXT_PUBLIC_HCAPTCHA_SITE_KEY;
+  const starterKit = (t.raw("starterKit") ?? {}) as StarterKitContent;
+  const starterKitResources = starterKit.resources ?? [];
+  const tutorialSection = starterKit.tutorials;
+  const tutorialItems = tutorialSection?.items ?? [];
 
   return (
     <div className="bg-surface-muted/40 py-16">
@@ -40,6 +78,77 @@ export default async function DeckUploadPage() {
           <h1 className="text-3xl font-semibold text-foreground">{t("title")}</h1>
           <p className="text-sm text-foreground/70">{t("intro")}</p>
         </div>
+        {starterKitResources.length || tutorialItems.length ? (
+          <section className="flex flex-col gap-6 rounded-3xl border border-border/60 bg-surface p-6 shadow-sm">
+            <div className="space-y-2">
+              {starterKit.title ? (
+                <h2 className="text-2xl font-semibold text-foreground">{starterKit.title}</h2>
+              ) : null}
+              {starterKit.description ? (
+                <p className="text-sm text-foreground/70">{starterKit.description}</p>
+              ) : null}
+            </div>
+            {starterKitResources.length ? (
+              <div className="grid gap-4 md:grid-cols-2">
+                {starterKitResources.map((resource) => (
+                  <article
+                    key={resource.id}
+                    className="flex h-full flex-col gap-4 rounded-2xl border border-border/40 bg-surface-muted/60 p-5"
+                  >
+                    <div className="space-y-2">
+                      <h3 className="text-base font-semibold text-foreground">{resource.title}</h3>
+                      <p className="text-sm text-foreground/70">{resource.description}</p>
+                    </div>
+                    {resource.links?.length ? (
+                      <div className="mt-auto flex flex-wrap gap-3">
+                        {resource.links.map((link) => (
+                          <Button key={`${resource.id}-${link.href}`} asChild variant="secondary" size="sm">
+                            <a
+                              href={link.href}
+                              target={link.external ? "_blank" : undefined}
+                              rel={link.external ? "noreferrer" : undefined}
+                              download={link.download ? "" : undefined}
+                            >
+                              {link.label}
+                            </a>
+                          </Button>
+                        ))}
+                      </div>
+                    ) : null}
+                  </article>
+                ))}
+              </div>
+            ) : null}
+            {tutorialItems.length ? (
+              <div className="space-y-4 rounded-2xl border border-border/40 bg-surface-muted/40 p-5">
+                <div className="space-y-1">
+                  {tutorialSection?.title ? (
+                    <h3 className="text-base font-semibold text-foreground">{tutorialSection.title}</h3>
+                  ) : null}
+                  {tutorialSection?.description ? (
+                    <p className="text-sm text-foreground/70">{tutorialSection.description}</p>
+                  ) : null}
+                </div>
+                <div className="grid gap-4 md:grid-cols-2">
+                  {tutorialItems.map((tutorial) => (
+                    <article
+                      key={tutorial.id}
+                      className="flex h-full flex-col gap-3 rounded-xl border border-border/40 bg-surface p-4"
+                    >
+                      <div>
+                        <h4 className="text-sm font-semibold text-foreground">{tutorial.title}</h4>
+                        <p className="mt-1 text-xs text-foreground/70">{tutorial.summary}</p>
+                      </div>
+                      <Button asChild variant="ghost" size="sm" className="mt-auto self-start">
+                        <a href={tutorial.href}>{tutorialSection?.linkLabel ?? tutorial.title}</a>
+                      </Button>
+                    </article>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+          </section>
+        ) : null}
         <DeckUploadForm
           labels={{
             jsonLabel: t("jsonLabel"),
