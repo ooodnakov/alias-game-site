@@ -76,8 +76,8 @@ export async function DeckCard({ deck }: { deck: DeckMetadata }) {
           <Button asChild size="sm">
             <Link href={`/decks/${deck.slug}`}>{t("import")}</Link>
           </Button>
-          <Button asChild variant="ghost" size="sm">
-            <a href={importUrl}>{t("details.deepLink")}</a>
+          <Button asChild variant="outline" size="sm">
+            <a href={importUrl}>{t("openInApp")}</a>
           </Button>
           <CopyJsonButton
             jsonUrl={jsonUrl}

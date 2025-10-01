@@ -3,6 +3,7 @@
     "home": "Home",
     "decks": "Decks",
     "about": "About",
+    "docs": "Docs",
     "upload": "Upload",
     "download": "Download APK",
     "menu": "Menu",
@@ -22,6 +23,10 @@
     "decks": {
       "title": "Browse Alioss decks",
       "description": "Filter community-made Alioss decks by language, difficulty, categories, and tags."
+    },
+    "docsDeckFormat": {
+      "title": "Author decks that work everywhere",
+      "description": "Learn how the website, MariaDB storage, and Android app agree on the alioss-deck@1 contract."
     },
     "upload": {
       "title": "Upload an Alioss deck",
@@ -107,6 +112,7 @@
     "words": "words",
     "nsfw": "NSFW",
     "import": "Import to Alioss",
+    "openInApp": "Open in Android app",
     "copyJson": "Copy JSON URL",
     "copied": "Copied!",
     "metadata": {
@@ -124,7 +130,9 @@
     },
     "details": {
       "sample": "Sample words",
-      "deepLink": "Deep link"
+      "deepLink": "Deep link",
+      "androidCta": "Scan with your Android camera or tap the link to start an import.",
+      "qrCaption": "QR code opens the Alioss app"
     },
     "pagination": {
       "next": "Next",
@@ -172,6 +180,84 @@
       "Open source app and website so anyone can contribute."
     ],
     "contact": "Questions or ideas? Open an issue on GitHub."
+  },
+  "docs": {
+    "deckFormat": {
+      "title": "Deck data contract",
+      "intro": "Follow this guide to publish JSON that the website, MariaDB storage, and Android client all agree on.",
+      "lastUpdated": "Last updated: April 2025",
+      "sections": {
+        "overview": {
+          "heading": "How deck data flows",
+          "body": [
+            "Uploaders submit JSON that must satisfy the Zod schema before it is normalized and stored in MariaDB.",
+            "Published rows expose a public JSON file that the Android app imports via the alioss:// deep link scheme."
+          ]
+        },
+        "schemas": {
+          "heading": "Zod validation rules",
+          "body": [
+            "Deck titles and authors are trimmed strings up to 100 characters, languages are currently limited to en or ru, and at least 20 unique words are required.",
+            "Each word entry may optionally include difficulty, category, and wordClass metadata, and deck-level metadata tracks categories, wordClasses, and optional cover art URLs."
+          ]
+        },
+        "mariadb": {
+          "heading": "MariaDB columns",
+          "body": [
+            "Normalized decks are expanded into searchable columns including slug, word counts, category/tag arrays, and SHA-256 checksums for integrity.",
+            "Published decks always point to a json_path that hosts the final payload consumed by the mobile app."
+          ]
+        },
+        "payload": {
+          "heading": "Produce alioss-deck@1 payloads",
+          "body": [
+            "Start from a normalized deck and publish it as alioss-deck@1. The Android importer treats DeckSchema JSON as version 1, but you may add a top-level format field when generating files manually.",
+            "Expose the payload over HTTPS; the importer downloads the JSON referenced by the deep link and re-computes the checksum before adding the deck to local storage."
+          ]
+        },
+        "validation": {
+          "heading": "Creator checklist",
+          "items": [
+            "Validate JSON with the DeckSchema before uploading.",
+            "Ensure categories, tags, and sample words are trimmed and deduplicated.",
+            "Host the generated JSON at a stable URL and test the alioss:// import link on a device."
+          ]
+        }
+      },
+      "table": {
+        "heading": "MariaDB → alioss-deck@1 mapping",
+        "columns": {
+          "mariadb": "MariaDB column",
+          "mobile": "alioss-deck@1 field",
+          "notes": "Notes"
+        },
+        "rows": {
+          "slug": { "mariadb": "slug", "mobile": "slug", "notes": "Stable deck identifier shared across web and mobile." },
+          "title": { "mariadb": "title", "mobile": "title", "notes": "Human-readable name displayed in both galleries." },
+          "author": { "mariadb": "author", "mobile": "author", "notes": "Attribution shown on cards and in the app." },
+          "language": { "mariadb": "language", "mobile": "language", "notes": "ISO language code that drives localization and filters." },
+          "wordCount": { "mariadb": "word_count", "mobile": "words.length", "notes": "Calculated during normalization for fast queries." },
+          "difficulty": { "mariadb": "difficulty_min/difficulty_max", "mobile": "derived metadata.difficulty", "notes": "Calculated from words[].difficulty to support filtering and pacing." },
+          "categories": { "mariadb": "categories", "mobile": "metadata.categories", "notes": "JSON array persisted verbatim after trimming." },
+          "wordClasses": { "mariadb": "word_classes", "mobile": "metadata.wordClasses", "notes": "Optional part-of-speech hints for the app UI." },
+          "cover": { "mariadb": "cover_url", "mobile": "metadata.coverImage", "notes": "Optional HTTPS art rendered on the card and Android details." },
+          "tags": { "mariadb": "tags", "mobile": "derived metadata.tags", "notes": "Populated from categories today; kept for future filter expansion." },
+          "nsfw": { "mariadb": "nsfw", "mobile": "allowNSFW", "notes": "Boolean propagated to gate adult-friendly decks." },
+          "jsonPath": { "mariadb": "json_path", "mobile": "download URL", "notes": "HTTP(S) endpoint the deep link resolves before import." },
+          "sha256": { "mariadb": "sha256", "mobile": "metadata.sha256", "notes": "Expose alongside the deck to let clients verify payload integrity." }
+        }
+      },
+      "exampleTitle": "Example alioss-deck@1 JSON",
+      "exampleDescription": "Normalized deck payload that Android treats as alioss-deck@1.",
+      "resources": {
+        "heading": "Further references",
+        "items": [
+          "DeckSchema TypeScript definition",
+          "MariaDB storage adapter",
+          "URL builder utilities"
+        ]
+      }
+    }
   },
   "admin": {
     "title": "Deck moderation",

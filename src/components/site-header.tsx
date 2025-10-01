@@ -13,6 +13,7 @@ export async function SiteHeader() {
     { href: "/", label: t("home") },
     { href: "/decks", label: t("decks") },
     { href: "/about", label: t("about") },
+    { href: "/docs/deck-format", label: t("docs") },
     { href: "/decks/upload", label: t("upload") },
   ];
 
