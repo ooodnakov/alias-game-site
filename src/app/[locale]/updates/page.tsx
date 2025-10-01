@@ -2,10 +2,10 @@ import type { Metadata } from "next";
 
 import { localizeMetadata } from "@/lib/metadata";
 
-import { generateMetadata as baseGenerateMetadata } from "../../../updates/page";
+import { generateMetadata as baseGenerateMetadata } from "../../updates/page";
 
-export { default } from "../../../updates/page";
-export { revalidate } from "../../../updates/page";
+export { default } from "../../updates/page";
+export { revalidate } from "../../updates/page";
 
 export async function generateMetadata({
   params,

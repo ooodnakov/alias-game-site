@@ -4,49 +4,49 @@ import { getTranslations } from "next-intl/server";
 
 import { Button } from "@/components/ui/button";
 import { getSafeLocale } from "@/i18n/get-safe-locale";
+import { z } from "zod";
 
 export const revalidate = 300;
 
-type SpotlightResource = {
-  label: string;
-  href: string;
-  external?: boolean;
-};
+const SpotlightResourceSchema = z.object({
+  label: z.string(),
+  href: z.string(),
+  external: z.boolean().optional(),
+});
 
-type SpotlightEntry = {
-  id: string;
-  date: string;
-  title: string;
-  summary: string;
-  siteHighlights?: string[];
-  appHighlights?: string[];
-  resources?: SpotlightResource[];
-};
+const SpotlightEntrySchema = z.object({
+  id: z.string(),
+  date: z.string(),
+  title: z.string(),
+  summary: z.string(),
+  siteHighlights: z.array(z.string()).optional(),
+  appHighlights: z.array(z.string()).optional(),
+  resources: z.array(SpotlightResourceSchema).optional(),
+});
 
-type TutorialItem = {
-  id: string;
-  title: string;
-  summary: string;
-  steps?: string[];
-};
+const TutorialItemSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  summary: z.string(),
+  steps: z.array(z.string()).optional(),
+});
 
-type TutorialsContent = {
-  title?: string;
-  intro?: string;
-  items?: TutorialItem[];
-};
+const TutorialsContentSchema = z.object({
+  title: z.string().optional(),
+  intro: z.string().optional(),
+  items: z.array(TutorialItemSchema).optional(),
+});
 
-type UpdatesContent = {
-  title?: string;
-  intro?: string;
-  labels?: {
-    site?: string;
-    app?: string;
-    resources?: string;
-  };
-  entries?: SpotlightEntry[];
-  tutorials?: TutorialsContent;
-};
+const UpdatesLabelsSchema = z.object({
+  site: z.string().optional(),
+  app: z.string().optional(),
+  resources: z.string().optional(),
+});
+
+const SpotlightEntriesSchema = z.array(SpotlightEntrySchema);
+
+type TutorialsContent = z.infer<typeof TutorialsContentSchema>;
+type UpdatesLabels = z.infer<typeof UpdatesLabelsSchema>;
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("meta");
@@ -79,9 +79,21 @@ export default async function UpdatesPage() {
   const locale = await getSafeLocale();
   const title = t("title");
   const intro = t("intro");
-  const labels = (t.raw("labels") ?? {}) as UpdatesContent["labels"];
-  const entries = [...(((t.raw("entries") ?? []) as SpotlightEntry[]))];
-  const tutorials = (t.raw("tutorials") ?? {}) as TutorialsContent;
+  const labelsResult = UpdatesLabelsSchema.safeParse(t.raw("labels") ?? {});
+  if (!labelsResult.success) {
+    console.error("Invalid updates labels", labelsResult.error);
+  }
+  const labels: UpdatesLabels = labelsResult.success ? labelsResult.data : {};
+  const entriesResult = SpotlightEntriesSchema.safeParse(t.raw("entries") ?? []);
+  if (!entriesResult.success) {
+    console.error("Invalid updates entries", entriesResult.error);
+  }
+  const entries = [...(entriesResult.success ? entriesResult.data : [])];
+  const tutorialsResult = TutorialsContentSchema.safeParse(t.raw("tutorials") ?? {});
+  if (!tutorialsResult.success) {
+    console.error("Invalid updates tutorials", tutorialsResult.error);
+  }
+  const tutorials: TutorialsContent | undefined = tutorialsResult.success ? tutorialsResult.data : undefined;
 
   entries.sort((a, b) => {
     const aTime = new Date(a.date).getTime();
@@ -167,7 +179,7 @@ export default async function UpdatesPage() {
                         <a
                           href={resource.href}
                           target={resource.external ? "_blank" : undefined}
-                          rel={resource.external ? "noreferrer" : undefined}
+                          rel={resource.external ? "noopener noreferrer" : undefined}
                         >
                           {resource.label}
                         </a>

@@ -3,39 +3,44 @@ import { getTranslations } from "next-intl/server";
 
 import { DeckUploadForm } from "@/components/deck-upload-form";
 import { Button } from "@/components/ui/button";
+import { z } from "zod";
 
-type StarterKitLink = {
-  label: string;
-  href: string;
-  external?: boolean;
-  download?: boolean;
-};
+const StarterKitLinkSchema = z.object({
+  label: z.string(),
+  href: z.string(),
+  external: z.boolean().optional(),
+  download: z.boolean().optional(),
+});
 
-type StarterKitResource = {
-  id: string;
-  title: string;
-  description: string;
-  links?: StarterKitLink[];
-};
+const StarterKitResourceSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  description: z.string(),
+  links: z.array(StarterKitLinkSchema).optional(),
+});
 
-type StarterKitTutorial = {
-  id: string;
-  title: string;
-  summary: string;
-  href: string;
-};
+const StarterKitTutorialSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  summary: z.string(),
+  href: z.string(),
+});
 
-type StarterKitContent = {
-  title?: string;
-  description?: string;
-  resources?: StarterKitResource[];
-  tutorials?: {
-    title?: string;
-    description?: string;
-    linkLabel?: string;
-    items?: StarterKitTutorial[];
-  };
-};
+const StarterKitTutorialSectionSchema = z.object({
+  title: z.string().optional(),
+  description: z.string().optional(),
+  linkLabel: z.string().optional(),
+  items: z.array(StarterKitTutorialSchema).optional(),
+});
+
+const StarterKitContentSchema = z.object({
+  title: z.string().optional(),
+  description: z.string().optional(),
+  resources: z.array(StarterKitResourceSchema).optional(),
+  tutorials: StarterKitTutorialSectionSchema.optional(),
+});
+
+type StarterKitContent = z.infer<typeof StarterKitContentSchema>;
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("meta");
@@ -66,7 +71,11 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function DeckUploadPage() {
   const t = await getTranslations("upload");
   const captchaSiteKey = process.env.NEXT_PUBLIC_HCAPTCHA_SITE_KEY;
-  const starterKit = (t.raw("starterKit") ?? {}) as StarterKitContent;
+  const starterKitResult = StarterKitContentSchema.safeParse(t.raw("starterKit") ?? {});
+  if (!starterKitResult.success) {
+    console.error("Invalid starter kit content", starterKitResult.error);
+  }
+  const starterKit: StarterKitContent = starterKitResult.success ? starterKitResult.data : {};
   const starterKitResources = starterKit.resources ?? [];
   const tutorialSection = starterKit.tutorials;
   const tutorialItems = tutorialSection?.items ?? [];
@@ -106,7 +115,7 @@ export default async function DeckUploadPage() {
                             <a
                               href={link.href}
                               target={link.external ? "_blank" : undefined}
-                              rel={link.external ? "noreferrer" : undefined}
+                              rel={link.external ? "noopener noreferrer" : undefined}
                               download={link.download ? "" : undefined}
                             >
                               {link.label}

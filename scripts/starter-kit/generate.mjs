@@ -168,10 +168,12 @@ async function main() {
   const darkCoverPath = resolve(outputDir, "cover-template-dark.svg");
   const lightCoverPath = resolve(outputDir, "cover-template-light.svg");
 
-  await writeFile(deckPath, `${JSON.stringify(starterDeck, null, 2)}\n`, "utf8");
-  await writeFile(checklistPath, `${formatChecklistMarkdown(migrationChecklist)}\n`, "utf8");
-  await writeFile(darkCoverPath, darkCoverSvg, "utf8");
-  await writeFile(lightCoverPath, lightCoverSvg, "utf8");
+  await Promise.all([
+    writeFile(deckPath, `${JSON.stringify(starterDeck, null, 2)}\n`, "utf8"),
+    writeFile(checklistPath, `${formatChecklistMarkdown(migrationChecklist)}\n`, "utf8"),
+    writeFile(darkCoverPath, darkCoverSvg, "utf8"),
+    writeFile(lightCoverPath, lightCoverSvg, "utf8"),
+  ]);
 }
 
 main().catch((error) => {
