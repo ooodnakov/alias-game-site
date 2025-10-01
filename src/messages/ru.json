@@ -3,6 +3,7 @@
     "home": "Главная",
     "decks": "Колоды",
     "about": "О проекте",
+    "docs": "Документация",
     "updates": "Обновления",
     "upload": "Загрузка",
     "download": "Скачать APK",
@@ -23,6 +24,10 @@
     "decks": {
       "title": "Каталог колод Alioss",
       "description": "Фильтруйте колоды сообщества по языку, сложности, категориям и тегам."
+    },
+    "docsDeckFormat": {
+      "title": "Колоды, работающие везде",
+      "description": "Как сайт, MariaDB и Android-приложение используют формат alioss-deck@1."
     },
     "upload": {
       "title": "Загрузить колоду Alioss",
@@ -112,6 +117,7 @@
     "words": "слов",
     "nsfw": "18+",
     "import": "Импортировать в Alioss",
+    "openInApp": "Открыть в Android-приложении",
     "copyJson": "Скопировать ссылку",
     "copied": "Скопировано!",
     "metadata": {
@@ -129,7 +135,9 @@
     },
     "details": {
       "sample": "Примеры слов",
-      "deepLink": "Глубокая ссылка"
+      "deepLink": "Глубокая ссылка",
+      "androidCta": "Сканируйте камерой Android или нажмите ссылку, чтобы начать импорт.",
+      "qrCaption": "QR-код открывает приложение Alioss"
     },
     "pagination": {
       "next": "Дальше",
@@ -334,6 +342,93 @@
       "Открытый исходный код приложения и сайта."
     ],
     "contact": "Есть идеи? Напишите issue на GitHub."
+  },
+  "docs": {
+    "deckFormat": {
+      "title": "Контракт данных колоды",
+      "intro": "Эта инструкция помогает публиковать JSON, с которым согласны сайт, MariaDB и Android-клиент.",
+      "lastUpdated": "Обновлено: апрель 2025",
+      "sections": {
+        "overview": {
+          "heading": "Как движутся данные",
+          "body": [
+            "Авторы загружают JSON, который должен пройти проверку схемы Zod, после чего данные нормализуются и попадают в MariaDB.",
+            "Опубликованные записи получают публичный JSON-файл, который Android-приложение импортирует через схему alioss://."
+          ]
+        },
+        "schemas": {
+          "heading": "Правила Zod",
+          "body": [
+            "Название и автор обрезаются до 100 символов, поддерживаются языки en и ru, а минимальный размер — 20 уникальных слов.",
+            "Каждое слово может содержать сложность, категорию и часть речи, а метаданные колоды хранят списки категорий, частей речи и необязательную обложку."
+          ]
+        },
+        "mariadb": {
+          "heading": "Колонки MariaDB",
+          "body": [
+            "Нормализованные колоды расширяются полями для поиска: слаг, количество слов, массивы категорий/тегов и SHA-256 для контроля целостности.",
+            "У опубликованных колод всегда заполнен json_path — он указывает на итоговый JSON, который скачивает мобильное приложение."
+          ]
+        },
+        "payload": {
+          "heading": "Готовим alioss-deck@1",
+          "body": [
+            "Возьмите нормализованную колоду и публикуйте её как alioss-deck@1. Импортёр Android трактует JSON DeckSchema как первую версию, но при самостоятельной генерации можно добавить поле format.",
+            "Раздавайте JSON по HTTPS: импортёр скачивает файл по глубокой ссылке и пересчитывает хеш перед сохранением."
+          ]
+        },
+        "validation": {
+          "heading": "Чек-лист автора",
+          "items": [
+            "Проверяйте JSON через DeckSchema перед загрузкой.",
+            "Обрезайте и удаляйте дубликаты в категориях, тегах и примерах слов.",
+            "Разместите JSON по стабильному URL и протестируйте ссылку alioss:// на устройстве."
+          ]
+        }
+      },
+      "table": {
+        "heading": "MariaDB → alioss-deck@1",
+        "columns": {
+          "mariadb": "Колонка MariaDB",
+          "mobile": "Поле alioss-deck@1",
+          "notes": "Комментарий"
+        },
+        "rows": {
+          "slug": { "mariadb": "slug", "mobile": "slug", "notes": "Стабильный идентификатор колоды для веба и приложения." },
+          "title": { "mariadb": "title", "mobile": "title", "notes": "Название, отображаемое в каталоге и на устройстве." },
+          "author": { "mariadb": "author", "mobile": "author", "notes": "Автор колоды, показывается в карточках." },
+          "language": { "mariadb": "language", "mobile": "language", "notes": "Код языка, влияющий на фильтры и локализацию." },
+          "wordCount": { "mariadb": "word_count", "mobile": "words.length", "notes": "Считается при нормализации для быстрых запросов." },
+          "difficulty": { "mariadb": "difficulty_min/difficulty_max", "mobile": "derived metadata.difficulty", "notes": "Вычисляется из полей words[].difficulty и помогает фильтрации." },
+          "categories": { "mariadb": "categories", "mobile": "metadata.categories", "notes": "Массив JSON после очистки пробелов." },
+          "wordClasses": { "mariadb": "word_classes", "mobile": "metadata.wordClasses", "notes": "Необязательные подсказки по частям речи." },
+          "cover": { "mariadb": "cover_url", "mobile": "metadata.coverImage", "notes": "Необязательная обложка по HTTPS." },
+          "tags": { "mariadb": "tags", "mobile": "derived metadata.tags", "notes": "Пока заполняется из категорий; запас для будущих фильтров." },
+          "nsfw": { "mariadb": "nsfw", "mobile": "allowNSFW", "notes": "Булево, помогающее скрывать взрослые колоды." },
+          "jsonPath": { "mariadb": "json_path", "mobile": "download URL", "notes": "HTTP(S)-адрес, который открывается по глубокой ссылке." },
+          "sha256": { "mariadb": "sha256", "mobile": "metadata.sha256", "notes": "Публикуйте рядом с JSON, чтобы клиенты проверяли целостность." }
+        }
+      },
+      "exampleTitle": "Пример JSON alioss-deck@1",
+      "exampleDescription": "Нормализованный payload, который Android воспринимает как alioss-deck@1.",
+      "resources": {
+        "heading": "Справочные материалы",
+        "items": [
+          {
+            "text": "Определение DeckSchema в TypeScript",
+            "url": "https://github.com/ooodnakov/alioss-site/blob/main/src/lib/deck-schema.ts"
+          },
+          {
+            "text": "Адаптер хранения MariaDB",
+            "url": "https://github.com/ooodnakov/alioss-site/blob/main/src/lib/deck-store/db.ts"
+          },
+          {
+            "text": "Утилиты построения ссылок",
+            "url": "https://github.com/ooodnakov/alioss-site/blob/main/src/lib/url.ts"
+          }
+        ]
+      }
+    }
   },
   "admin": {
     "title": "Модерация колод",

@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { getDeckBySlug, listDeckSlugs } from "@/lib/deck-store";
 import { buildDeckImportUrl, buildDeckJsonUrl, getBaseUrl } from "@/lib/url";
+import { getQrCodeDataUrl } from "@/lib/qr-code";
 
 interface DeckDetailPageParams {
   slug: string;
@@ -77,6 +78,7 @@ export default async function DeckDetailPage({
 
   const jsonUrl = buildDeckJsonUrl(record.metadata.slug);
   const importUrl = buildDeckImportUrl(record.metadata.slug);
+  const qrCodeDataUrl = await getQrCodeDataUrl(importUrl);
   const detailUrl = `${getBaseUrl()}/decks/${record.metadata.slug}`;
   const additionalProperties: Array<Record<string, unknown>> = [
     {
@@ -178,7 +180,7 @@ export default async function DeckDetailPage({
             ) : null}
             <div className="flex flex-wrap gap-3">
               <Button asChild size="sm">
-                <a href={importUrl}>{t("import")}</a>
+                <a href={importUrl}>{t("openInApp")}</a>
               </Button>
               <Button asChild variant="secondary" size="sm">
                 <Link href="/decks">{t("back")}</Link>
@@ -257,6 +259,23 @@ export default async function DeckDetailPage({
                   {importUrl}
                 </a>
               </p>
+              <p className="text-sm text-foreground/70">{t("details.androidCta")}</p>
+              <div className="flex flex-col items-start gap-3 rounded-3xl border border-dashed border-border/60 bg-muted/30 p-4 sm:flex-row sm:items-center">
+                <div className="rounded-2xl bg-white p-2 shadow-sm">
+                  <Image
+                    src={qrCodeDataUrl}
+                    alt={t("details.qrCaption")}
+                    width={144}
+                    height={144}
+                    className="h-36 w-36"
+                    unoptimized
+                  />
+                </div>
+                <div className="space-y-1 text-sm text-foreground/70">
+                  <p className="font-medium text-foreground">{t("openInApp")}</p>
+                  <p>{t("details.qrCaption")}</p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
