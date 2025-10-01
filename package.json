@@ -9,6 +9,7 @@
     "lint": "eslint",
     "test": "vitest run",
     "test:watch": "vitest",
+    "pretest:e2e": "playwright install --with-deps",
     "test:e2e": "playwright test"
   },
   "dependencies": {
